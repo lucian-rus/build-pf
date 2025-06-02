@@ -1,0 +1,15 @@
+/build/CMakeFiles
+/build/components
+/build/cmake_install.cmake
+/build/CMakeCache.txt
+/build/Makefile
+
+# python-venv directories and files
+/tools/sandbox/bin/
+/tools/sandbox/lib/
+/tools/sandbox/lib64/
+/tools/sandbox/lib64
+/tools/sandbox/include/
+
+# vs-code files to ignore
+.vscode/settings.json
