@@ -1,0 +1,27 @@
+<block_list>
+    <block>
+        add_library(lib.{component_name} STATIC
+        # sources
+            src/{component_name}.c
+        # includes
+            inc/{component_name}.h
+        )
+    </block>
+    <block>
+        ### add compile definitions
+    </block>
+    <block>
+        ### set target properties
+        set_target_properties(lib.{component_name} PROPERTIES LINKER_LANGUAGE C)
+    </block>
+    <block>
+        ### set target header dir
+        target_include_directories(lib.{component_name} PUBLIC inc)
+    </block>
+    <block>
+        ### additional dependencies
+        target_link_libraries(lib.{component_name}
+            lib.{}
+        )
+    </block>
+</block_list>
