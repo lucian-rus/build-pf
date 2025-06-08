@@ -1,0 +1,10 @@
+name,required,type,text
+init_include,true,include,#include <linux/init.h>
+module_include,true,include,#include <linux/module.h>
+license,true,macro,MODULE_LICENSE("``template_module_license``");
+author,false,macro,MODULE_AUTHOR("``template_module_author``");
+description,false,macro,MODULE_DESCRIPTION("``template_module_description``");
+init_function,true,function,static int ``template_function_init``_init(void)
+exit_function,true,function,static void ``template_function_init``_exit(void)
+init,true,macro,module_init(``template_function_init``_init);
+exit,true,macro,module_exit(``template_function_init``_init);
