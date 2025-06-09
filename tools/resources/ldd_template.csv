@@ -1,10 +1,10 @@
 name,required,type,text
-init_include,true,include,#include <linux/init.h>
-module_include,true,include,#include <linux/module.h>
-license,true,macro,MODULE_LICENSE("``template_module_license``");
-author,false,macro,MODULE_AUTHOR("``template_module_author``");
-description,false,macro,MODULE_DESCRIPTION("``template_module_description``");
-init_function,true,function,static int ``template_function_init``_init(void)
-exit_function,true,function,static void ``template_function_init``_exit(void)
-init,true,macro,module_init(``template_function_init``_init);
-exit,true,macro,module_exit(``template_function_init``_init);
+init_include,true,include,#include @1@linux/init.h@2@
+module_include,true,include,#include @1@linux/module.h@2@
+license,true,ldd_start_macro,MODULE_LICENSE("``template_module_license``");
+author,false,ldd_start_macro,MODULE_AUTHOR("``template_module_author``");
+description,false,ldd_start_macro,MODULE_DESCRIPTION("``template_module_description``");
+init_function,true,function,static int ``template_ldd_name``_init(void)
+exit_function,true,function,static void ``template_ldd_name``_exit(void)
+init,true,ldd_end_macro,module_init(``template_ldd_name``_init);
+exit,true,ldd_end_macro,module_exit(``template_ldd_name``_init);

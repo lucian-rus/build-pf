@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<body>
+    <item>
+        <name>init_include</name>
+        <required>true</required>
+        <type>include</type>
+        <text>#include @1@linux/init.h@2@</text>
+    </item>
+
+    <item>
+        <name>module_include</name>
+        <required>true</required>
+        <type>include</type>
+        <text>#include @1@linux/module.h@2@</text>
+    </item>
+
+    <item>
+        <name>license</name>
+        <required>true</required>
+        <type>ldd_start_macro</type>
+        <text>MODULE_LICENSE("``template_module_license``");</text>
+    </item>
+
+    <item>
+        <name>author</name>
+        <required>false</required>
+        <type>ldd_start_macro</type>
+        <text>MODULE_AUTHOR("``template_module_author``");</text>
+    </item>
+
+    <item>
+        <name>description</name>
+        <required>false</required>
+        <type>ldd_start_macro</type>
+        <text>MODULE_DESCRIPTION("``template_module_description``");</text>
+    </item>
+
+    <item>
+        <name>init_function</name>
+        <required>true</required>
+        <type>function</type>
+        <text>static int ``template_ldd_name``_init(void)</text>
+    </item>
+
+    <item>
+        <name>exit_function</name>
+        <required>true</required>
+        <type>function</type>
+        <text>static void ``template_ldd_name``_exit(void)</text>
+    </item>
+
+    <item>
+        <name>init</name>
+        <required>true</required>
+        <type>ldd_end_macro</type>
+        <text>module_init(``template_ldd_name``_init);</text>
+    </item>
+
+    <item>
+        <name>exit</name>
+        <required>true</required>
+        <type>ldd_end_macro</type>
+        <text>module_exit(``template_ldd_name``_init);</text>
+    </item>
+
+</body>
