@@ -24,6 +24,7 @@ for line in content:
     output += "        <{start}>{content}</{stop}>\n".format(start=header[1], content=data[1], stop=header[1])
     output += "        <{start}>{content}</{stop}>\n".format(start=header[2], content=data[2], stop=header[2])
     output += "        <{start}>{content}</{stop}>\n".format(start=header[3], content=data[3], stop=header[3])
+    output += "        <{start}>{content}</{stop}>\n".format(start=header[4], content=data[4], stop=header[4])
     output += "    </item>\n\n"
 
 output += "</body>\n"

@@ -1,10 +1,18 @@
-name,required,type,text
-init_include,true,include,#include @1@linux/init.h@2@
-module_include,true,include,#include @1@linux/module.h@2@
-license,true,ldd_start_macro,MODULE_LICENSE("``template_module_license``");
-author,false,ldd_start_macro,MODULE_AUTHOR("``template_module_author``");
-description,false,ldd_start_macro,MODULE_DESCRIPTION("``template_module_description``");
-init_function,true,function,static int ``template_ldd_name``_init(void)
-exit_function,true,function,static void ``template_ldd_name``_exit(void)
-init,true,ldd_end_macro,module_init(``template_ldd_name``_init);
-exit,true,ldd_end_macro,module_exit(``template_ldd_name``_init);
+name,required,type,parent,text
+init_include,true,include,root,#include @1@linux/init.h@2@
+module_include,true,include,root,#include @1@linux/module.h@2@
+license,true,ldd_start_macro,root,MODULE_LICENSE("``template_module_license``");
+author,false,ldd_start_macro,root,MODULE_AUTHOR("``template_module_author``");
+description,false,ldd_start_macro,root,MODULE_DESCRIPTION("``template_module_description``");
+init_function,true,function,root,static int ``template_ldd_name``_init(void)
+exit_function,true,function,root,static void ``template_ldd_name``_exit(void)
+init,true,ldd_end_macro,root,module_init(``template_ldd_name``_init);
+exit,true,ldd_end_macro,root,module_exit(``template_ldd_name``_exit);
+proc_include,false,include,root,#include @1@linux/proc_fs.h@2@
+proc_struct_decl,false,declaration,root,static struct proc_dir_entry *proc_entry;
+proc_entry_decl,false,declaration,root,struct proc_ops driver_proc_ops = {};
+func_call1,false,function_call,init_function,printk("------------------- module loaded\n");
+func_call2,false,function_call,init_function,proc_entry = proc_create("``template_ldd_name``" @3@ (umode_t)0 @3@ NULL @3@ @4@driver_proc_ops);
+func_call3,false,function_call,init_function,return 0;
+func_call4,false,function_call,exit_function,printk("------------------- module unloaded\n");
+func_call5,false,function_call,exit_function,proc_remove(proc_entry);
