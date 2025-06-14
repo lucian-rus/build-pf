@@ -1,0 +1,106 @@
+{
+    "include": [
+        {
+            "name": "init_include",
+            "required": "true",
+            "text": "#include <linux/init.h>"
+        },
+        {
+            "name": "module_include",
+            "required": "true",
+            "text": "#include <linux/module.h>"
+        },
+        {
+            "name": "proc_include",
+            "required": "false",
+            "text": "#include <linux/proc_fs.h>"
+        }
+    ],
+    "ldd_start_macro": [
+        {
+            "name": "license",
+            "required": "true",
+            "text": "MODULE_LICENSE(\"``template_module_license``\");"
+        },
+        {
+            "name": "author",
+            "required": "false",
+            "text": "MODULE_AUTHOR(\"``template_module_author``\");"
+        },
+        {
+            "name": "description",
+            "required": "false",
+            "text": "MODULE_DESCRIPTION(\"``template_module_description``\");"
+        }
+    ],
+    "function": [
+        {
+            "name": "init_function",
+            "required": "true",
+            "text": "static int ``template_ldd_name``_init(void)",
+            "children": [
+                {
+                    "name": "func_call1",
+                    "required": "false",
+                    "class": "function_call",
+                    "text": "printk(\"------------------- module loaded\\n\");"
+                },
+                {
+                    "name": "func_call2",
+                    "required": "false",
+                    "class": "function_call",
+                    "text": "proc_entry = proc_create(\"``template_ldd_name``\" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);"
+                },
+                {
+                    "name": "func_call3",
+                    "required": "false",
+                    "class": "function_call",
+                    "text": "return 0;"
+                }
+            ]
+        },
+        {
+            "name": "exit_function",
+            "required": "true",
+            "text": "static void ``template_ldd_name``_exit(void)",
+            "children": [
+                {
+                    "name": "func_call4",
+                    "required": "false",
+                    "class": "function_call",
+                    "text": "printk(\"------------------- module unloaded\\n\");"
+                },
+                {
+                    "name": "func_call5",
+                    "required": "false",
+                    "class": "function_call",
+                    "text": "proc_remove(proc_entry);"
+                }
+            ]
+        }
+    ],
+    "ldd_end_macro": [
+        {
+            "name": "init",
+            "required": "true",
+            "text": "module_init(``template_ldd_name``_init);"
+        },
+        {
+            "name": "exit",
+            "required": "true",
+            "text": "module_exit(``template_ldd_name``_exit);"
+        }
+    ],
+    "declaration": [
+        {
+            "name": "proc_struct_decl",
+            "required": "false",
+            "text": "static struct proc_dir_entry *proc_entry;"
+        },
+        {
+            "name": "proc_entry_decl",
+            "required": "false",
+            "text": "struct proc_ops driver_proc_ops = {};"
+        }
+    ]
+}
