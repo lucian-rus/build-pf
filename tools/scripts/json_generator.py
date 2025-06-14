@@ -30,12 +30,21 @@ for line in content:
             output[obj["class"]] = []
 
         obj_class = obj["class"]
+        to_delete = []
+        for key, value in obj.items():
+            if value == "":
+                to_delete.append(key)
+
+        # cleanup
+        for key in to_delete:
+            del obj[key]
         del obj["class"]
         del obj["parent"]
+
         output[obj_class].append(obj)
     else:
-        # probably a better way of doing this
-        for item in output["function"]:
+        # probably a better way of doing this -> move to tree 
+        for item in output["scope"]:
             if obj["parent"] == item["name"]:
                 if not "children" in item:
                     item["children"] = []

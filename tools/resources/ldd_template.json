@@ -1,106 +1,170 @@
 {
     "include": [
         {
-            "name": "init_include",
             "required": "true",
             "text": "#include <linux/init.h>"
         },
         {
-            "name": "module_include",
             "required": "true",
             "text": "#include <linux/module.h>"
         },
         {
-            "name": "proc_include",
             "required": "false",
-            "text": "#include <linux/proc_fs.h>"
+            "text": "#include <linux/proc_fs.h>",
+            "question": "include proc operations macro?"
         }
     ],
-    "ldd_start_macro": [
+    "macro": [
         {
-            "name": "license",
             "required": "true",
-            "text": "MODULE_LICENSE(\"``template_module_license``\");"
+            "subclass": "ldd_start",
+            "text": "\"MODULE_LICENSE(\"\"``template_module_license``\"\");\""
         },
         {
-            "name": "author",
             "required": "false",
-            "text": "MODULE_AUTHOR(\"``template_module_author``\");"
+            "subclass": "ldd_start",
+            "text": "\"MODULE_AUTHOR(\"\"``template_module_author``\"\");\"",
+            "question": "add module author macro?"
         },
         {
-            "name": "description",
             "required": "false",
-            "text": "MODULE_DESCRIPTION(\"``template_module_description``\");"
-        }
-    ],
-    "function": [
-        {
-            "name": "init_function",
-            "required": "true",
-            "text": "static int ``template_ldd_name``_init(void)",
-            "children": [
-                {
-                    "name": "func_call1",
-                    "required": "false",
-                    "class": "function_call",
-                    "text": "printk(\"------------------- module loaded\\n\");"
-                },
-                {
-                    "name": "func_call2",
-                    "required": "false",
-                    "class": "function_call",
-                    "text": "proc_entry = proc_create(\"``template_ldd_name``\" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);"
-                },
-                {
-                    "name": "func_call3",
-                    "required": "false",
-                    "class": "function_call",
-                    "text": "return 0;"
-                }
-            ]
+            "subclass": "ldd_start",
+            "text": "\"MODULE_DESCRIPTION(\"\"``template_module_description``\"\");\"",
+            "question": "add module description macro?"
         },
         {
-            "name": "exit_function",
             "required": "true",
-            "text": "static void ``template_ldd_name``_exit(void)",
-            "children": [
-                {
-                    "name": "func_call4",
-                    "required": "false",
-                    "class": "function_call",
-                    "text": "printk(\"------------------- module unloaded\\n\");"
-                },
-                {
-                    "name": "func_call5",
-                    "required": "false",
-                    "class": "function_call",
-                    "text": "proc_remove(proc_entry);"
-                }
-            ]
-        }
-    ],
-    "ldd_end_macro": [
-        {
-            "name": "init",
-            "required": "true",
+            "subclass": "ldd_end",
             "text": "module_init(``template_ldd_name``_init);"
         },
         {
-            "name": "exit",
             "required": "true",
+            "subclass": "ldd_end",
             "text": "module_exit(``template_ldd_name``_exit);"
         }
     ],
-    "declaration": [
+    "scope": [
         {
-            "name": "proc_struct_decl",
-            "required": "false",
-            "text": "static struct proc_dir_entry *proc_entry;"
+            "name": "func_init",
+            "required": "true",
+            "subclass": "function",
+            "text": "static int ``template_ldd_name``_init(void)",
+            "children": [
+                {
+                    "name": "",
+                    "required": "false",
+                    "class": "expression",
+                    "subclass": "",
+                    "text": "\"printk(\"\"------------------- module loaded\\n\"\");\"",
+                    "position": "",
+                    "question": "add module init message?"
+                },
+                {
+                    "name": "",
+                    "required": "false",
+                    "class": "expression",
+                    "subclass": "",
+                    "text": "\"proc_entry = proc_create(\"\"``template_ldd_name``\"\" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);\"",
+                    "position": "",
+                    "question": "create proc entry? "
+                },
+                {
+                    "name": "",
+                    "required": "true",
+                    "class": "expression",
+                    "subclass": "",
+                    "text": "return 0;",
+                    "position": "",
+                    "question": ""
+                }
+            ]
         },
         {
-            "name": "proc_entry_decl",
+            "name": "func_exit",
+            "required": "true",
+            "subclass": "function",
+            "text": "static void ``template_ldd_name``_exit(void)",
+            "children": [
+                {
+                    "name": "",
+                    "required": "false",
+                    "class": "expression",
+                    "subclass": "",
+                    "text": "\"printk(\"\"------------------- module unloaded\\n\"\");\"",
+                    "position": "",
+                    "question": "add module exit message?"
+                },
+                {
+                    "name": "",
+                    "required": "false",
+                    "class": "expression",
+                    "subclass": "",
+                    "text": "proc_remove(proc_entry);",
+                    "position": "",
+                    "question": "remove proc entry?"
+                }
+            ]
+        },
+        {
+            "name": "proc_ops_decl",
             "required": "false",
-            "text": "struct proc_ops driver_proc_ops = {};"
+            "subclass": "declaration",
+            "text": "struct proc_ops driver_proc_ops = {};",
+            "question": "declare proc operations structure?"
+        }
+    ],
+    "expression": [
+        {
+            "required": "false",
+            "text": "static struct proc_dir_entry *proc_entry;",
+            "question": "declare proc entry?"
+        }
+    ],
+    "prototype": [
+        {
+            "required": "false",
+            "text": "ssize_t ``template_ldd_name``_read(struct file *file@1@ char __user *buf@1@ size_t count@1@ loff_t *ppos);",
+            "question": "add prototype for proc read?"
+        },
+        {
+            "required": "false",
+            "text": "ssize_t ``template_ldd_name``_write(struct file *file@1@ const char __user *buf@1@ size_t count@1@ loff_t *ppos);",
+            "question": "add prototype for proc write?"
+        },
+        {
+            "required": "false",
+            "text": "int ``template_ldd_name``_open(struct inode *inode@1@ struct file *file);",
+            "question": "add prototype for proc open?"
+        },
+        {
+            "required": "false",
+            "text": "int ``template_ldd_name``_release(struct inode *inode@1@ struct file *file);",
+            "question": "add prototype for proc release?"
+        },
+        {
+            "required": "false",
+            "text": "loff_t ``template_ldd_name``_lseek(struct file *file@1@ loff_t offset@1@ int whence);",
+            "question": "add prototype for proc lseek?"
+        },
+        {
+            "required": "false",
+            "text": "__poll_t ``template_ldd_name``_poll(struct file *file@1@ struct poll_table_struct *wait);",
+            "question": "add prototype for proc poll?"
+        },
+        {
+            "required": "false",
+            "text": "long ``template_ldd_name``_ioctl(struct file *file@1@ unsigned int cmd@1@ unsigned long arg);",
+            "question": "add prototype for proc ioctl?"
+        },
+        {
+            "required": "false",
+            "text": "long ``template_ldd_name``_compat_ioctl(struct file *file@1@ unsigned int cmd@1@ unsigned long arg);",
+            "question": "add prototype for proc compat ioctl?"
+        },
+        {
+            "required": "false",
+            "text": "int ``template_ldd_name``_mmap(struct file *file@1@ struct vm_area_struct *vma);",
+            "question": "add prototype for proc mmap?"
         }
     ]
 }
