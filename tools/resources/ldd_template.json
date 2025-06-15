@@ -47,60 +47,49 @@
         {
             "name": "func_init",
             "required": "true",
-            "subclass": "function",
+            "subclass": "generic",
             "text": "static int ``template_ldd_name``_init(void)",
             "children": [
                 {
-                    "name": "",
                     "required": "false",
                     "class": "expression",
-                    "subclass": "",
+                    "parent": "func_init",
                     "text": "\"printk(\"\"------------------- module loaded\\n\"\");\"",
-                    "position": "",
                     "question": "add module init message?"
                 },
                 {
-                    "name": "",
                     "required": "false",
                     "class": "expression",
-                    "subclass": "",
+                    "parent": "func_init",
                     "text": "\"proc_entry = proc_create(\"\"``template_ldd_name``\"\" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);\"",
-                    "position": "",
                     "question": "create proc entry? "
                 },
                 {
-                    "name": "",
                     "required": "true",
                     "class": "expression",
-                    "subclass": "",
-                    "text": "return 0;",
-                    "position": "",
-                    "question": ""
+                    "parent": "func_init",
+                    "text": "return 0;"
                 }
             ]
         },
         {
             "name": "func_exit",
             "required": "true",
-            "subclass": "function",
+            "subclass": "generic",
             "text": "static void ``template_ldd_name``_exit(void)",
             "children": [
                 {
-                    "name": "",
                     "required": "false",
                     "class": "expression",
-                    "subclass": "",
+                    "parent": "func_exit",
                     "text": "\"printk(\"\"------------------- module unloaded\\n\"\");\"",
-                    "position": "",
                     "question": "add module exit message?"
                 },
                 {
-                    "name": "",
                     "required": "false",
                     "class": "expression",
-                    "subclass": "",
+                    "parent": "func_exit",
                     "text": "proc_remove(proc_entry);",
-                    "position": "",
                     "question": "remove proc entry?"
                 }
             ]

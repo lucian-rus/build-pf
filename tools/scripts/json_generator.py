@@ -1,60 +1,108 @@
 import os
 import json
 
-# looks dumb but works
-file = open(os.path.dirname(os.path.realpath(__file__)) + "/../resources/ldd_template.csv")
-content = file.read()
-file.close()
+def get_csv_file_content(file_path):
+    """! reads and returns the raw CSV data """
+    file = open(file_path)
+    raw_content = file.read()
+    file.close()
 
-content = content.split("\n")
+    return raw_content
 
-# get header then remove it
-header = content[0]
-header = header.split(",")
-content = content[1:]
-# remove last element (useless newline)
-content = content[:-1]
+def extract_and_remove_header(content):
+    content = content.split("\n")
 
-backlog = []
-output = {}
-
-for line in content:
-    data = line.split(',')
-    obj = {}
-
-    for i in range(0, len(header)):
-        obj[header[i]] = data[i]
+    # get header then remove it
+    header = content[0]
+    header = header.split(",")
+    content = content[1:]
+    # remove last element (useless newline)
+    content = content[:-1]
     
-    if obj["parent"] == "root":
-        if not obj["class"] in output:
-            output[obj["class"]] = []
+    return header, content
 
-        obj_class = obj["class"]
-        to_delete = []
-        for key, value in obj.items():
-            if value == "":
-                to_delete.append(key)
+def write_json_data_to_file(file_path, output):
+    file = open(file_path, "w")
+    file.write(json.dumps(output))
+    file.close()
 
-        # cleanup
-        for key in to_delete:
-            del obj[key]
-        del obj["class"]
-        del obj["parent"]
+def parse_csv_file(raw_csv_data, header):
+    output = []
 
-        output[obj_class].append(obj)
-    else:
-        # probably a better way of doing this -> move to tree 
-        for item in output["scope"]:
-            if obj["parent"] == item["name"]:
-                if not "children" in item:
-                    item["children"] = []
+    for line in raw_csv_data:
+        data = line.split(',')
+        temporary_dict_container = {}
+
+        # create temp dict -> skip if value should be empty. this is to clean the objects up
+        for i in range(0, len(header)):
+            if not data[i] == "":
+                temporary_dict_container[header[i]] = data[i]
+        output.append(temporary_dict_container)
+
+    return output
+
+def setup_output_dict(backlog):
+    output = {}
+    # list where to add indexes for items to be deleted
+    to_delete_index_list = []
+
+    backlog_item_counter = 0
+    for item in backlog:
+        if item["parent"] == "root":
+            # ensure existence of top layer
+            if not item["class"] in output:
+                output[item["class"]] = []
+
+            temporary_class_data = item["class"]
+            # those are not required anymore, so delete them for more clarity in the JSON file
+            del item["parent"]
+            del item["class"]
+            output[temporary_class_data].append(item)
+            to_delete_index_list.append(backlog_item_counter)
+
+        # increase this counter
+        backlog_item_counter += 1
+    
+    # run backlog cleanup -> go backwards
+    for index in reversed(to_delete_index_list):
+        del backlog[index]
+
+    return output, backlog
+
+def parse_backlog(backlog, output):
+    # list where to add indexes for items to be deleted
+    to_delete_index_list = []
+
+    backlog_item_counter = 0
+    for item in backlog:
+        # probably a better way to do this
+        for scope in output["scope"]:
+            if item["parent"] == scope["name"]:
+                if not "children" in scope:
+                    scope["children"] = []
                 
-                del obj["parent"]
-                item["children"].append(obj)
-                break
 
-print(json.dumps(output))
+                scope["children"].append(item)
+                to_delete_index_list.append(backlog_item_counter)
+    # run backlog cleanup -> go backwards
+    for index in reversed(to_delete_index_list):
+        del backlog[index]
+        
+    return output, backlog
 
-file = open(os.path.dirname(os.path.realpath(__file__)) + "/../resources/ldd_template.json", "w")
-file.write(json.dumps(output))
-file.close()
+def __main__():
+    raw_content = get_csv_file_content(os.path.dirname(os.path.realpath(__file__)) + "/../resources/ldd_template.csv")
+    header, headerless_content = extract_and_remove_header(raw_content)
+
+    # while could be called parsed data, is called backlog because it represents the data that shall be parsed
+    backlog = parse_csv_file(headerless_content, header)
+    output, backlog = setup_output_dict(backlog)
+
+    # do this until no items are left in backlog -> does not support nesting yet
+    while not len(backlog) == 0:
+        print(backlog)
+        output, backlog = parse_backlog(backlog, output)
+
+    write_json_data_to_file(os.path.dirname(os.path.realpath(__file__)) + "/../resources/ldd_template.json", output)
+
+__main__()

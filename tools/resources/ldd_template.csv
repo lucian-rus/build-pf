@@ -4,8 +4,8 @@ name,required,class,subclass,parent,text,position,question
 ,true,macro,ldd_start,root,"MODULE_LICENSE(""``template_module_license``"");",,
 ,false,macro,ldd_start,root,"MODULE_AUTHOR(""``template_module_author``"");",,add module author macro?
 ,false,macro,ldd_start,root,"MODULE_DESCRIPTION(""``template_module_description``"");",,add module description macro?
-func_init,true,scope,function,root,static int ``template_ldd_name``_init(void),,
-func_exit,true,scope,function,root,static void ``template_ldd_name``_exit(void),,
+func_init,true,scope,generic,root,static int ``template_ldd_name``_init(void),,
+func_exit,true,scope,generic,root,static void ``template_ldd_name``_exit(void),,
 ,true,macro,ldd_end,root,module_init(``template_ldd_name``_init);,,
 ,true,macro,ldd_end,root,module_exit(``template_ldd_name``_exit);,,
 ,false,include,,root,#include <linux/proc_fs.h>,,include proc operations macro?
