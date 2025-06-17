@@ -9,6 +9,11 @@ def get_csv_file_content(file_path):
 
     return raw_content
 
+def write_json_data_to_file(file_path, output):
+    file = open(file_path, "w")
+    file.write(json.dumps(output))
+    file.close()
+
 def extract_and_remove_header(content):
     content = content.split("\n")
 
@@ -20,11 +25,6 @@ def extract_and_remove_header(content):
     content = content[:-1]
     
     return header, content
-
-def write_json_data_to_file(file_path, output):
-    file = open(file_path, "w")
-    file.write(json.dumps(output))
-    file.close()
 
 def parse_csv_file(raw_csv_data, header):
     output = []
@@ -69,13 +69,14 @@ def setup_output_dict(backlog):
 
     return output, backlog
 
+# add support for nested scopes
 def parse_backlog(backlog, output):
     # list where to add indexes for items to be deleted
     to_delete_index_list = []
 
     backlog_item_counter = 0
     for item in backlog:
-        # probably a better way to do this
+        # probably a better way to do this -> do this recursively
         for scope in output["scope"]:
             if item["parent"] == scope["name"]:
                 if not "children" in scope:
@@ -87,7 +88,7 @@ def parse_backlog(backlog, output):
     # run backlog cleanup -> go backwards
     for index in reversed(to_delete_index_list):
         del backlog[index]
-        
+
     return output, backlog
 
 def __main__():

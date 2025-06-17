@@ -11,10 +11,10 @@ func_exit,true,scope,generic,root,static void ``template_ldd_name``_exit(void),,
 ,false,include,,root,#include <linux/proc_fs.h>,,include proc operations macro?
 ,false,expression,,root,static struct proc_dir_entry *proc_entry;,,declare proc entry?
 proc_ops_decl,false,scope,declaration,root,struct proc_ops driver_proc_ops = {};,,declare proc operations structure?
-,false,expression,,func_init,"printk(""------------------- module loaded\n"");",,add module init message?
-,false,expression,,func_init,"proc_entry = proc_create(""``template_ldd_name``"" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);",,create proc entry? 
+,false,expression,,func_init,printk("------------------- module loaded\n");",,add module init message?
+,false,expression,,func_init,proc_entry = proc_create(""``template_ldd_name``"" @1@ (umode_t)0 @1@ NULL @1@ &driver_proc_ops);",,create proc entry? 
 ,true,expression,,func_init,return 0;,,
-,false,expression,,func_exit,"printk(""------------------- module unloaded\n"");",,add module exit message?
+,false,expression,,func_exit,printk("------------------- module unloaded\n");,,add module exit message?
 ,false,expression,,func_exit,proc_remove(proc_entry);,,remove proc entry?
 ,false,prototype,,root,ssize_t ``template_ldd_name``_read(struct file *file@1@ char __user *buf@1@ size_t count@1@ loff_t *ppos);,,add prototype for proc read?
 ,false,prototype,,root,ssize_t ``template_ldd_name``_write(struct file *file@1@ const char __user *buf@1@ size_t count@1@ loff_t *ppos);,,add prototype for proc write?
