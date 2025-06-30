@@ -10,7 +10,7 @@ build() {
     # run python pre_build script
     python tools/scripts/pre_build.py "$1"
 
-    cd drivers
+    cd driver
     make
     cd ..
 
@@ -21,7 +21,7 @@ build() {
 # run makefile clean and remove output stuff
 clean() {
     echo "> running make clean"
-    cd drivers
+    cd driver
     make clean
     cd ..
     rm -rf ./output

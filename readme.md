@@ -1,15 +1,14 @@
-targeted features:
-* extensible component adding
-* basic package creator
-* basic package manager
+# build-pf project
 
-a component shall:
-* be able to be stored as a repository
-* be able to create a package with a specific version
+this is a build platform that is planned to support multiple features and is meant to integrate with the oncoming locally-hosted cloud package manager. currently supports:
+* basic ldd generation, without the configurator/generator
+* platform setup script
 
-- the python version is preliminary, will convert to go once the self-hosted cloud is set up
-- move to block-based xml templates to allow higher configurability
+### how to use:
 
-### archi
+* clone the repo
+* run `platform-setup.sh` and select the desired project
 
-get a base of all resources, decide what kind of project to run, remove all other stuff
+### building
+
+* ldd -> run `./build.sh <driver_name>` to build the project

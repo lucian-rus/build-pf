@@ -17,6 +17,7 @@ fi
 
 python ./platform/scripts/platform-setup.py
 
+# finish up set-up by removing unwanted files -> @todo make this configurable ??
+rm -rf .git
 rm -rf platform
-
 rm platform-setup.sh
