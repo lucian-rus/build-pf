@@ -25,11 +25,11 @@ def setup_project(json_data):
         return
     
     # this shall always happen
-    file_move_function(json_data["resource_dir"], "./test_dir")
+    file_move_function(json_data["resource_dir"], "./")
 
     # looks dumb but works
     for key, value in list(json_data.items())[1:]:
-        if value["required"] == False:
+        if not value["required"]:
             choice = input(f"{value["question"]} - yes/no: ").strip()
             if choice == "no":
                 continue
