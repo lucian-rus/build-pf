@@ -44,16 +44,16 @@ def setup_project(json_data, proj_type):
         print("     !!! NOT YET SUPPORTED")
         return
 
-    # # this shall always happen
-    # file_move_function(json_data["resource_dir"], "./")
+    # this shall always happen
+    file_move_function(json_data["resource_dir"], "./")
 
-    # # looks dumb but works
-    # for key, value in list(json_data.items())[1:]:
-    #     if not value["required"]:
-    #         choice = input(f"{value['question']} - yes/no: ").strip()
-    #         if choice == "no":
-    #             continue
-    #     file_move_function(value["source"], value["dest"])
+    # looks dumb but works
+    for key, value in list(json_data.items())[1:]:
+        if not value["required"]:
+            choice = input(f"{value['question']} - yes/no: ").strip()
+            if choice == "no":
+                continue
+        file_move_function(value["source"], value["dest"])
 
     # @todo make this properly configurable through the json
     if proj_type == "ldd_project":
