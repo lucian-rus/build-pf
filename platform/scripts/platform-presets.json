@@ -1,0 +1,29 @@
+{
+    "ldd project": {
+        "resource_dir": "platform/resources/ldd_project",
+        "scripts": {
+            "required": true,
+            "source": "platform/resources/ldd_project/scripts",
+            "dest": "tools/scripts"
+        },
+        "resources": {
+            "required": true,
+            "source": "platform/resources/ldd_project/resources",
+            "dest": "tools/resources"
+        },
+        "generators": {
+            "required": false,
+            "question": "Add the generator directory? This directory contains the generators associated with this specific kind of project.",
+            "source": "platform/resources/ldd_project/generators",
+            "dest": "tools/generators"
+        },
+        "templates": {
+            "required": false,
+            "question": "Add the templates directory? This directory contains the project templates.",
+            "source": "platform/resources/ldd_project/templates",
+            "dest": "tools/templates"
+        }
+    },
+    "component-based project": {},
+    "generic project": {}
+}

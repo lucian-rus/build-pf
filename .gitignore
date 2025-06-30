@@ -5,11 +5,11 @@
 /build/Makefile
 
 # python-venv directories and files
-/tools/sandbox/bin/
-/tools/sandbox/lib/
-/tools/sandbox/lib64/
-/tools/sandbox/lib64
-/tools/sandbox/include/
+/tools/sandbox
+/tools/.temp
 
 # vs-code files to ignore
-.vscode/settings.json
+.vscode/
+
+# output/build files to ignore
+output/
