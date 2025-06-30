@@ -45,21 +45,18 @@ def create_directory(dir_path):
         print("!!!      created directory {dir}".format(dir=dir_path))
 
 
-def check_temp_dir_generation(compiler_flags, makefile_path):
+def create_temp_dir(makefile_path):
     """
-    Checks and ensures the temporary directory is generated as needed for the build process.
+    Creates the temporary directory needed for the build process.
 
     Parameters
     ----------
-    compiler_flags : list of str
-        List of compiler flags to use.
     makefile_path : str
         Path to the Makefile to check or update.
     """
-    if 0 != len(compiler_flags):
-        temp_dir = os.path.join(SCRIPT_DIR_PATH, TEMP_DIR_PATH)
-        create_directory(temp_dir)
-        shutil.copy(makefile_path, temp_dir)
+    temp_dir = os.path.join(SCRIPT_DIR_PATH, TEMP_DIR_PATH)
+    create_directory(temp_dir)
+    shutil.copy(makefile_path, temp_dir)
 
 
 def update_compiler_flags(compiler_flags, raw_data):
@@ -149,7 +146,7 @@ def update_default_makefile():
     makefile_dir_path = get_data_from_json("makefile_directory_path")
     makefile_path = os.path.join(SCRIPT_DIR_PATH, makefile_dir_path, "Makefile")
 
-    check_temp_dir_generation(compiler_flags, makefile_path)
+    create_temp_dir(makefile_path)
 
     # update the Makefile data
     file = open(makefile_path)

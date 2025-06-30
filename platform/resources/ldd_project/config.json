@@ -1,5 +1,5 @@
 {
-    "makefile_directory_path": "../../drivers",
+    "makefile_directory_path": "../../driver",
 
     "pre_build_create_dirs": ["./output"],
     "compiler_flags": [],

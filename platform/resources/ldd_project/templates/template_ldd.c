@@ -32,7 +32,7 @@ static struct proc_dir_entry *proc_entry = NULL;
 // --------------------------------------------------
 static int __init template_gpio_init(void) {
     /* create entry in proc */
-    proc_entry = proc_create(TEMPLATE_GPIO_DEVNAME, 0666, NULL, &fops);
+    proc_entry = proc_create(TEMPLATE_LDD_DEVNAME, 0666, NULL, &fops);
 
 #if defined(GENERIC_LDD_LOGGER_ENABLED)
     LOG_WARN("template-ldd: registered\n");
@@ -41,7 +41,7 @@ static int __init template_gpio_init(void) {
 }
 
 static void __exit template_gpio_exit(void) {
-    unregister_chrdev(TEMPLATE_GPIO_MAJOR, TEMPLATE_GPIO_DEVNAME);
+    unregister_chrdev(TEMPLATE_LDD_MAJOR, TEMPLATE_LDD_DEVNAME);
 
 #if defined(GENERIC_LDD_LOGGER_ENABLED)
     LOG_WARN("template-ldd: unregistered\n");
