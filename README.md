@@ -19,3 +19,5 @@ e.g :
 * should work with pacgo
 * should be very easy to configure
 * should have a main json in which subfolders cand be added
+* should support pre-build and post-build execution of custom scripts or apps
+* should support custom commands 
