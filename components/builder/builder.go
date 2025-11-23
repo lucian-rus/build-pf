@@ -1,27 +1,24 @@
 package builder
 
 import (
-	"bytes"
 	"fmt"
+	"gobi/components/env"
+	"log"
+	"os"
 	"os/exec"
 )
 
-var (
-	compiler     string
-	argumentList []string
-)
+func PrepareBuildCommands(libraryProperties env.LibraryProperties) error {
+	// order is important - for now
+	// @todo: change order once everything is done
+	setCompiler(libraryProperties)
 
-func PrepareBuildCommands(sourceFilesList []string) error {
-	compiler = "gcc"
+	setFlags(libraryProperties)
+	setDefines(libraryProperties)
+	setIncludes(libraryProperties)
 
-	// set output stuff
-	argumentList = append(argumentList, "-o")
-	argumentList = append(argumentList, "output")
-
-	// set input stuff
-	for _, sourceFile := range sourceFilesList {
-		argumentList = append(argumentList, sourceFile)
-	}
+	setOutputProperties(libraryProperties)
+	setInputProperties(libraryProperties)
 
 	return nil
 }
@@ -32,18 +29,20 @@ func RunBuilder() error {
 	for _, arg := range argumentList {
 		commandToRun += " " + arg
 	}
-	fmt.Println(commandToRun)
+	log.Println(commandToRun)
 
 	cmd := exec.Command(compiler, argumentList...)
-	var cmdOutput bytes.Buffer
-	cmd.Stdout = &cmdOutput
 
+	var so saveOutput
+	cmd.Stdout = &so
+	cmd.Stderr = os.Stderr
 	// should capture output of gcc command
 	if err := cmd.Run(); err != nil {
 		fmt.Println("encountered an error: ", err)
+		fmt.Print(so.savedOutput)
 		return err
 	}
 
-	fmt.Print(cmdOutput.String())
+	fmt.Print(so.savedOutput)
 	return nil
 }

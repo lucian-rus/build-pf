@@ -21,3 +21,4 @@ e.g :
 * should have a main json in which subfolders cand be added
 * should support pre-build and post-build execution of custom scripts or apps
 * should support custom commands 
+* consider adding support for custom entry point -> for now, entry point is root dir and main should be here
