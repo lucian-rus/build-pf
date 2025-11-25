@@ -38,7 +38,7 @@ func init() {
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func validateNumberOfArguments(num, maxNum, minNum int) error {
+func validateNumberOfArguments(num, minNum, maxNum int) error {
 	if err := checkIfTooManyArguments(num, maxNum); err != nil {
 		return err
 	}

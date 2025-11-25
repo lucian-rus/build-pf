@@ -22,3 +22,7 @@ e.g :
 * should support pre-build and post-build execution of custom scripts or apps
 * should support custom commands 
 * consider adding support for custom entry point -> for now, entry point is root dir and main should be here
+
+* add support for cmake/make built files, objects and libs -> allow skip of compilation
+* generator for .vscode files and linter support
+* search and index all include files and resolve them dynamically before build-time -> this will work properly after include checks are implemented

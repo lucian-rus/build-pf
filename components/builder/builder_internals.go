@@ -54,6 +54,10 @@ func setInputProperties(libraryProprties env.LibraryProperties) {
 	for _, sourceFile := range libraryProprties.Sources {
 		argumentList = append(argumentList, sourceFile)
 	}
+
+	for _, library := range libraryProprties.Dependencies.Libraries {
+		argumentList = append(argumentList, library)
+	}
 }
 
 // consider doing this our own

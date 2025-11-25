@@ -12,8 +12,9 @@ type LibraryProperties struct {
 	}
 
 	Dependencies struct {
-		Public  []string `json:"public"`  // allows dependencies to be inherited by other libs
-		Private []string `json:"private"` // dependencies will NOT be inherited
+		Public    []string `json:"public"`  // allows dependencies to be inherited by other libs
+		Private   []string `json:"private"` // dependencies will NOT be inherited
+		Libraries []string // consider if this is public or not
 	}
 }
 

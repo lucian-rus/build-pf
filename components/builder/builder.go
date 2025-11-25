@@ -30,12 +30,17 @@ func RunBuilder() error {
 		commandToRun += " " + arg
 	}
 	log.Println(commandToRun)
+	fmt.Println("running: ", commandToRun)
 
 	cmd := exec.Command(compiler, argumentList...)
 
 	var so saveOutput
 	cmd.Stdout = &so
 	cmd.Stderr = os.Stderr
+
+	// clear the slice regardless of output
+	argumentList = nil
+
 	// should capture output of gcc command
 	if err := cmd.Run(); err != nil {
 		fmt.Println("encountered an error: ", err)
@@ -43,6 +48,5 @@ func RunBuilder() error {
 		return err
 	}
 
-	fmt.Print(so.savedOutput)
 	return nil
 }
