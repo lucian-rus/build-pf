@@ -1,0 +1,14 @@
+{
+    "name": "lib_app",
+
+    "sources": [
+        "src/app.c"
+    ],
+
+    "includes": {
+        "public": [
+            "inc"
+        ],
+        "private": []
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "flags": [
+        "-c"
+    ],
+    "includes": {
+        "public": [],
+        "private": []
+    },
+    "pre-build": {
+        "cmd": "",
+        "arg_list": []
+    },
+    "post-build": {
+        "cmd": "",
+        "arg_list": []
+    } 
+}

@@ -1,0 +1,12 @@
+{
+    "compiler": "gcc",
+    "compiler_flags": "",
+    "compiler_path": "",
+
+    "project_name": "test-output",
+    "subdirectories": [
+        "subdir1",
+        "subdir2"
+    ],
+    "allow_include_override": false
+}

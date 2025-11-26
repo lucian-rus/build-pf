@@ -1,0 +1,21 @@
+{
+    "compiler": "gcc",
+
+    "name": "main-app",
+    "sources": [
+        "main.c"
+    ],
+    "dependencies": {
+        "private": [
+            "lib_algo",
+            "lib_app",
+            "lib_io"
+        ]
+    },
+
+    "subdirectories": [
+        "./algorithms",
+        "./app",
+        "./io"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "name": "lib_io",
+
+    "sources": [
+        "src/io.c"
+    ],
+
+    "includes": {
+        "public": [
+            "inc"
+        ],
+        "private": []
+    }
+}
