@@ -1,8 +1,10 @@
 package builder
 
 import (
-	"gobi/components/env"
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
 )
 
 // @todo this is taken over from stack, should be properly handled
@@ -16,21 +18,19 @@ var (
 	argumentList []string
 )
 
-func setCompiler(libraryProprties env.LibraryProperties) {
+func setCompiler(libraryProprties LibraryProperties) {
 	compiler = "gcc"
 }
 
-func setFlags(libraryProprties env.LibraryProperties) {
-	for _, item := range libraryProprties.Flags {
-		argumentList = append(argumentList, item)
-	}
+func setFlags(libraryProprties LibraryProperties) {
+	argumentList = append(argumentList, libraryProprties.Flags...)
 }
 
-func setDefines(libraryProprties env.LibraryProperties) {
+func setDefines(libraryProprties LibraryProperties) {
 
 }
 
-func setIncludes(libraryProprties env.LibraryProperties) {
+func setIncludes(libraryProprties LibraryProperties) {
 	for _, item := range libraryProprties.Includes.Public {
 		parsedArgument := "-I" + item
 		argumentList = append(argumentList, parsedArgument)
@@ -42,22 +42,44 @@ func setIncludes(libraryProprties env.LibraryProperties) {
 	}
 }
 
-func setOutputProperties(libraryProprties env.LibraryProperties) {
+func setOutputProperties(libraryProprties LibraryProperties) {
 	// set output stuff
 	argumentList = append(argumentList, "-o")
 	argumentList = append(argumentList, libraryProprties.Name)
 }
 
-func setInputProperties(libraryProprties env.LibraryProperties) {
+func setInputProperties(libraryProprties LibraryProperties) {
 	// set target source file
+	argumentList = append(argumentList, libraryProprties.Sources...)
+	argumentList = append(argumentList, libraryProprties.Dependencies.Libraries...)
+}
 
-	for _, sourceFile := range libraryProprties.Sources {
-		argumentList = append(argumentList, sourceFile)
+func runBuilder() error {
+	var commandToRun string
+	commandToRun += compiler
+	for _, arg := range argumentList {
+		commandToRun += " " + arg
+	}
+	log.Println(commandToRun)
+	fmt.Println("running: ", commandToRun)
+
+	cmd := exec.Command(compiler, argumentList...)
+
+	var so saveOutput
+	cmd.Stdout = &so
+	cmd.Stderr = os.Stderr
+
+	// clear the slice regardless of output
+	argumentList = nil
+
+	// should capture output of gcc command
+	if err := cmd.Run(); err != nil {
+		fmt.Println("encountered an error: ", err)
+		fmt.Print(so.savedOutput)
+		return err
 	}
 
-	for _, library := range libraryProprties.Dependencies.Libraries {
-		argumentList = append(argumentList, library)
-	}
+	return nil
 }
 
 // consider doing this our own

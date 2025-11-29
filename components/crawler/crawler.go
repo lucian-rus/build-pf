@@ -3,13 +3,14 @@ package crawler
 import (
 	"encoding/json"
 	"fmt"
+	"gobi/components/builder"
 	"gobi/components/env"
 	"log"
 	"os"
 	"path/filepath"
 )
 
-func ReadLibraryConfigFileContent(jsonFilePath string, libraryProperties *env.LibraryProperties) error {
+func ReadLibraryConfigFileContent(jsonFilePath string, libraryProperties *builder.LibraryProperties) error {
 	fileContent, err := os.ReadFile(jsonFilePath)
 	if err != nil {
 		log.Println("Error when trying to open", jsonFilePath)
@@ -21,7 +22,7 @@ func ReadLibraryConfigFileContent(jsonFilePath string, libraryProperties *env.Li
 		return err
 	}
 
-	if true == env.EnableDebugData {
+	if env.EnableDebugData {
 		fmt.Println((*libraryProperties).Name)
 		fmt.Println((*libraryProperties).Includes)
 		fmt.Println((*libraryProperties).Dependencies)
@@ -29,7 +30,7 @@ func ReadLibraryConfigFileContent(jsonFilePath string, libraryProperties *env.Li
 	return nil
 }
 
-func ReadProjectConfigFileContent(jsonFilePath string, projectProperties *env.ProjectProperties) error {
+func ReadProjectConfigFileContent(jsonFilePath string, projectProperties *builder.ProjectProperties) error {
 	fileContent, err := os.ReadFile(jsonFilePath)
 	if err != nil {
 		log.Println("Error when trying to open", jsonFilePath)
@@ -57,11 +58,11 @@ func ScanDirectoryForSourceFiles(directoryPath string, sourceFilesList *[]string
 	}
 
 	for _, entry := range entries {
-		if ".c" != filepath.Ext(entry.Name()) {
+		if filepath.Ext(entry.Name()) != ".c" {
 			continue
 		}
 
-		if false == absolutePaths {
+		if !absolutePaths {
 			fmt.Println("* found file: ", entry.Name())
 			*sourceFilesList = append(*sourceFilesList, entry.Name())
 			continue
@@ -77,4 +78,8 @@ func ScanDirectoryForSourceFiles(directoryPath string, sourceFilesList *[]string
 	}
 
 	return nil
+}
+
+func ScanDirectoryForConfigurationFiles() {
+
 }

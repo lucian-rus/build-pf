@@ -1,52 +1,60 @@
+// Package builder implements the build functionality
 package builder
 
-import (
-	"fmt"
-	"gobi/components/env"
-	"log"
-	"os"
-	"os/exec"
-)
+type LibraryProperties struct {
+	Name    string   `json:"name"`
+	Defines []string `json:"defines"`
+	Sources []string `json:"sources"`
+	Flags   []string `json:"flags"`
 
-func PrepareBuildCommands(libraryProperties env.LibraryProperties) error {
-	// order is important - for now
-	// @todo: change order once everything is done
-	setCompiler(libraryProperties)
+	Includes struct {
+		Public  []string `json:"public"`  // these includes can be accessed by libs that depend on this lib
+		Private []string `json:"private"` // these includes are not visible
+	}
 
-	setFlags(libraryProperties)
-	setDefines(libraryProperties)
-	setIncludes(libraryProperties)
-
-	setOutputProperties(libraryProperties)
-	setInputProperties(libraryProperties)
-
-	return nil
+	Dependencies struct {
+		Public    []string `json:"public"`  // allows dependencies to be inherited by other libs
+		Private   []string `json:"private"` // dependencies will NOT be inherited
+		Libraries []string // consider if this is public or not
+	}
 }
 
-func RunBuilder() error {
-	var commandToRun string
-	commandToRun += compiler
-	for _, arg := range argumentList {
-		commandToRun += " " + arg
-	}
-	log.Println(commandToRun)
-	fmt.Println("running: ", commandToRun)
+type ProjectProperties struct {
+	// @todo add support for pacgo packages
+	Version        int      `json:"version"`
+	Subdirectories []string `json:"subdirectories"`
 
-	cmd := exec.Command(compiler, argumentList...)
+	BuildToolchainPath string `json:"build_toolchain_path"`
+	Compiler           string `json:"compiler"`
+	Linker             string `json:"linker"`
+	Assembler          string `json:"assembler"`
 
-	var so saveOutput
-	cmd.Stdout = &so
-	cmd.Stderr = os.Stderr
+	OutputPath         string `json:"output_path"`
+	BuildMetadata      bool   `json:"build_meta_data"`
+	PreprocessorOutput bool   `json:"preprocessor_output"`
 
-	// clear the slice regardless of output
-	argumentList = nil
+	// a project is also a library with other libraries linked
+	LibraryProperties
+}
 
-	// should capture output of gcc command
-	if err := cmd.Run(); err != nil {
-		fmt.Println("encountered an error: ", err)
-		fmt.Print(so.savedOutput)
-		return err
-	}
+var (
+	ProjectConfiguration   ProjectProperties // this HAS to be unique
+	LibrariesConfiguration []LibraryProperties
 
-	return nil
+	LibrariesMap = make(
+		map[string]int,
+	) // maps the name of a library to its index in the `LibrariesConfiguration` array for fast access
+)
+
+func (lib *LibraryProperties) Build() error {
+	setCompiler(*lib)
+
+	setFlags(*lib)
+	setDefines(*lib)
+	setIncludes(*lib)
+
+	setOutputProperties(*lib)
+	setInputProperties(*lib)
+
+	return runBuilder()
 }

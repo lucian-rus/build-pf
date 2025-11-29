@@ -3,7 +3,6 @@ package cmd
 import (
 	"gobi/components/builder"
 	"gobi/components/crawler"
-	"gobi/components/env"
 	"log"
 	"os"
 	"path/filepath"
@@ -41,12 +40,12 @@ func runBuildCmd(args []string) {
 
 	// @todo handle case in which configuration file is not present. this shall default to a specific config
 	// set based on machine
-	if err := crawler.ReadProjectConfigFileContent(projectConfigFileName, &env.ProjectConfiguration); err != nil {
+	if err := crawler.ReadProjectConfigFileContent(projectConfigFileName, &builder.ProjectConfiguration); err != nil {
 		log.Fatal(err)
 	}
 
 	// @todo start handling errors
-	for _, subdir := range env.ProjectConfiguration.Subdirectories {
+	for _, subdir := range builder.ProjectConfiguration.Subdirectories {
 		buildLibrary(args, subdir, projectWorkingDirectory)
 	}
 
@@ -57,20 +56,19 @@ func runBuildCmd(args []string) {
 	// build project -> yet to be resolved
 
 	// @todo properly extract generic functions here
-	for _, dependency := range env.ProjectConfiguration.Dependencies.Public {
-		dependencyIndex := env.LibrariesMap[dependency]
-		env.ProjectConfiguration.Includes.Public = append(env.ProjectConfiguration.Includes.Public,
-			env.LibrariesConfiguration[dependencyIndex].Includes.Public...)
+	for _, dependency := range builder.ProjectConfiguration.Dependencies.Public {
+		dependencyIndex := builder.LibrariesMap[dependency]
+		builder.ProjectConfiguration.Includes.Public = append(builder.ProjectConfiguration.Includes.Public,
+			builder.LibrariesConfiguration[dependencyIndex].Includes.Public...)
 	}
 
-	for _, dependency := range env.ProjectConfiguration.Dependencies.Private {
-		dependencyIndex := env.LibrariesMap[dependency]
-		env.ProjectConfiguration.Includes.Private = append(env.ProjectConfiguration.Includes.Private,
-			env.LibrariesConfiguration[dependencyIndex].Includes.Public...)
+	for _, dependency := range builder.ProjectConfiguration.Dependencies.Private {
+		dependencyIndex := builder.LibrariesMap[dependency]
+		builder.ProjectConfiguration.Includes.Private = append(builder.ProjectConfiguration.Includes.Private,
+			builder.LibrariesConfiguration[dependencyIndex].Includes.Public...)
 	}
 
-	builder.PrepareBuildCommands(env.ProjectConfiguration.LibraryProperties)
-	builder.RunBuilder()
+	builder.ProjectConfiguration.Build()
 
 }
 
@@ -82,7 +80,7 @@ func buildLibrary(args []string, subdir, projectWorkingDirectory string) {
 	libraryConfigFileName := filepath.Join(libraryWorkingDirectory, "lib.json")
 	log.Println("Reading ", libraryConfigFileName)
 
-	var localLibraryConfiguration env.LibraryProperties
+	var localLibraryConfiguration builder.LibraryProperties
 	crawler.ReadLibraryConfigFileContent(libraryConfigFileName, &localLibraryConfiguration)
 
 	if 0 == len(localLibraryConfiguration.Sources) {
@@ -93,23 +91,22 @@ func buildLibrary(args []string, subdir, projectWorkingDirectory string) {
 
 	// since libraries do not contain the main function, use `-c` flag
 	localLibraryConfiguration.Flags = append(localLibraryConfiguration.Flags, "-c")
-	builder.PrepareBuildCommands(localLibraryConfiguration)
-	builder.RunBuilder()
+	localLibraryConfiguration.Build()
 
 	resolveGlobalDependencies(localLibraryConfiguration, libraryWorkingDirectory)
 	// finally map the index and append the new config
-	env.LibrariesMap[localLibraryConfiguration.Name] = len(env.LibrariesConfiguration)
-	env.LibrariesConfiguration = append(env.LibrariesConfiguration, localLibraryConfiguration)
+	builder.LibrariesMap[localLibraryConfiguration.Name] = len(builder.LibrariesConfiguration)
+	builder.LibrariesConfiguration = append(builder.LibrariesConfiguration, localLibraryConfiguration)
 
 	// @todo fix this -> this is a terrible way of doing this
-	env.ProjectConfiguration.Dependencies.Libraries = append(env.ProjectConfiguration.Dependencies.Libraries,
+	builder.ProjectConfiguration.Dependencies.Libraries = append(builder.ProjectConfiguration.Dependencies.Libraries,
 		filepath.Join(libraryWorkingDirectory, localLibraryConfiguration.Name))
 
 	os.Chdir(projectWorkingDirectory)
 	log.Println("Changing directory back to ", projectWorkingDirectory)
 }
 
-func resolveGlobalDependencies(libraryConfiguration env.LibraryProperties, libraryWorkingDirectory string) {
+func resolveGlobalDependencies(libraryConfiguration builder.LibraryProperties, libraryWorkingDirectory string) {
 	// @todo this may not be needed
 	// for index, path := range libraryConfiguration.Sources {
 	// 	libraryConfiguration.Sources[index] = filepath.Join(libraryWorkingDirectory, path)
