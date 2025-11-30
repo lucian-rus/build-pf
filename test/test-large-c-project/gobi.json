@@ -1,10 +1,13 @@
 {
     "compiler": "gcc",
+    "output_path": "build",
+    "log_path": "log",
 
     "name": "main-app",
     "sources": [
         "main.c"
     ],
+    
     "dependencies": {
         "private": [
             "lib_algo",

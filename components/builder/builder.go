@@ -13,8 +13,10 @@ type LibraryProperties struct {
 	}
 
 	Dependencies struct {
-		Public    []string `json:"public"`  // allows dependencies to be inherited by other libs
-		Private   []string `json:"private"` // dependencies will NOT be inherited
+		Public  []string `json:"public"`  // allows dependencies to be inherited by other libs
+		Private []string `json:"private"` // dependencies will NOT be inherited
+
+		// this is internal
 		Libraries []string // consider if this is public or not
 	}
 }
@@ -29,9 +31,10 @@ type ProjectProperties struct {
 	Linker             string `json:"linker"`
 	Assembler          string `json:"assembler"`
 
-	OutputPath         string `json:"output_path"`
-	BuildMetadata      bool   `json:"build_meta_data"`
-	PreprocessorOutput bool   `json:"preprocessor_output"`
+	OutputPath               string `json:"output_path"`
+	LogDirectoryPath         string `json:"log_path"`
+	BuildMetadataEnable      bool   `json:"build_meta_data_enable"`
+	PreprocessorOutputEnable bool   `json:"preprocessor_output_enable"`
 
 	// a project is also a library with other libraries linked
 	LibraryProperties
@@ -45,6 +48,10 @@ var (
 		map[string]int,
 	) // maps the name of a library to its index in the `LibrariesConfiguration` array for fast access
 )
+
+func (lib *LibraryProperties) ResolveDependencies() error {
+	return nil
+}
 
 func (lib *LibraryProperties) Build() error {
 	setCompiler(*lib)

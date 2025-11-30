@@ -1,4 +1,5 @@
-# /test
+/test/log
+/test/build
 /log
 
 gobi
