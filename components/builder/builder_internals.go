@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // @todo this is taken over from stack, should be properly handled
@@ -18,40 +19,43 @@ var (
 	argumentList []string
 )
 
-func setCompiler(libraryProprties LibraryProperties) {
+func setCompiler(libProprties LibraryProperties) {
 	compiler = "gcc"
 }
 
-func setFlags(libraryProprties LibraryProperties) {
-	argumentList = append(argumentList, libraryProprties.Flags...)
+func setFlags(libProprties LibraryProperties) {
+	argumentList = append(argumentList, libProprties.Flags...)
 }
 
-func setDefines(libraryProprties LibraryProperties) {
+func setDefines(libProprties LibraryProperties) {
 
 }
 
-func setIncludes(libraryProprties LibraryProperties) {
-	for _, item := range libraryProprties.Includes.Public {
+func setIncludes(libProprties LibraryProperties) {
+	for _, item := range libProprties.Includes.Public {
 		parsedArgument := "-I" + item
 		argumentList = append(argumentList, parsedArgument)
 	}
 
-	for _, item := range libraryProprties.Includes.Private {
+	for _, item := range libProprties.Includes.Private {
 		parsedArgument := "-I" + item
 		argumentList = append(argumentList, parsedArgument)
 	}
 }
 
-func setOutputProperties(libraryProprties LibraryProperties) {
+func setOutputProperties(libProprties LibraryProperties) {
 	// set output stuff
 	argumentList = append(argumentList, "-o")
-	argumentList = append(argumentList, libraryProprties.Name)
+
+	// @todo need to resolve global dependency for output
+	objOutputPath := filepath.Join(ProjectConfiguration.OutputPath, libProprties.Name)
+	argumentList = append(argumentList, objOutputPath)
 }
 
-func setInputProperties(libraryProprties LibraryProperties) {
+func setInputProperties(libProprties LibraryProperties) {
 	// set target source file
-	argumentList = append(argumentList, libraryProprties.Sources...)
-	argumentList = append(argumentList, libraryProprties.Dependencies.Libraries...)
+	argumentList = append(argumentList, libProprties.Sources...)
+	argumentList = append(argumentList, libProprties.Dependencies.Libraries...)
 }
 
 func runBuilder() error {
