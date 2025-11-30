@@ -5,32 +5,24 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
 	"gobi/components/builder"
 	"gobi/components/env"
 )
 
-func SetupFilesystem(cwd string, project builder.ProjectProperties) error {
-	buildDir := filepath.Join(cwd, project.OutputPath)
-	logDir := filepath.Join(cwd, "log")
-
-	if DoesEntityExist(buildDir) && DoesEntityExist(logDir) {
+func SetupFilesystem(project builder.ProjectProperties) error {
+	if DoesEntityExist(project.OutputPath) {
 		return nil
 	}
 
-	if err := os.Mkdir(buildDir, 0777); err != nil {
-		return err
-	}
-
-	if err := os.Mkdir(logDir, 0777); err != nil {
+	if err := os.Mkdir(project.OutputPath, 0777); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func ReadLibraryConfigFileContent(
+func ReadLibraryConfigFile(
 	jsonFilePath string,
 	libraryProperties *builder.LibraryProperties,
 ) error {

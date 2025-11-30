@@ -1,5 +1,4 @@
-/test/log
-/test/build
+/test/test-large-c-project/build/
 /log
 
 gobi

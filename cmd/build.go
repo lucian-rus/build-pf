@@ -1,14 +1,15 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"gobi/components/builder"
-	"gobi/components/crawler"
 	"gobi/components/filesystem"
 )
 
@@ -33,115 +34,67 @@ func runBuildCmd(args []string) {
 		args = append(args, ".")
 	}
 
+	startNow := time.Now()
+
 	cwd, _ := os.Getwd()
-	projectWorkingDirectory := filepath.Join(cwd, args[0])
-	projectConfigFileName := filepath.Join(projectWorkingDirectory, "gobi.json")
+	projWorkingDir := filepath.Join(cwd, args[0])
+	projConfigFileName := filepath.Join(projWorkingDir, "gobi.json")
 
 	// @todo handle case in which configuration file is not present. this shall default to a specific config
 	// set based on machine
-	if err := filesystem.ReadProjectConfigFileContent(projectConfigFileName, &builder.ProjectConfiguration); err != nil {
+	if err := filesystem.ReadProjectConfigFileContent(projConfigFileName, &builder.ProjectConfiguration); err != nil {
 		log.Fatal(err)
 	}
 
-	// @todo refactor all below
-	// @todo start handling errors
-	for _, subdir := range builder.ProjectConfiguration.Subdirectories {
-		buildLibrary(args, subdir, projectWorkingDirectory)
-	}
+	builder.ProjectConfiguration.ResolveSubdirPaths(projWorkingDir)
+	builder.ProjectConfiguration.ResolveOutputPath(projWorkingDir)
 
-	// @todo resolve build and squash stuff together
-	// global include paths have been resolved
-	// dependency output global path -> yet to be resolved
-	// make build generic -> yet to be resolved
-	// build project -> yet to be resolved
+	// step 1 -> setup filesystem for build to happen
+	filesystem.SetupFilesystem(builder.ProjectConfiguration)
 
-	// @todo properly extract generic functions here
-	for _, dependency := range builder.ProjectConfiguration.Dependencies.Public {
-		dependencyIndex := builder.LibrariesMap[dependency]
-		builder.ProjectConfiguration.Includes.Public = append(
-			builder.ProjectConfiguration.Includes.Public,
-			builder.LibrariesConfiguration[dependencyIndex].Includes.Public...)
-	}
+	// step 2 -> create lib entry for all dependencies (@todo use goroutines)
+	createLibEntries(projWorkingDir)
+	// step 3 -> sort based on dependency tree
 
-	for _, dependency := range builder.ProjectConfiguration.Dependencies.Private {
-		dependencyIndex := builder.LibrariesMap[dependency]
-		builder.ProjectConfiguration.Includes.Private = append(
-			builder.ProjectConfiguration.Includes.Private,
-			builder.LibrariesConfiguration[dependencyIndex].Includes.Public...)
-	}
+	// step 4 -> build libs
+	buildLibs()
+
+	// step 5 -> build proj (building proj requires running steps 3 beforehand)
+	builder.ProjectConfiguration.ResolvePrivateIncludesGlobalPaths(projWorkingDir)
+	builder.ProjectConfiguration.ResolvePublicIncludesGlobalPaths(projWorkingDir)
+	builder.ProjectConfiguration.ResolveSourcesGlobalPaths(projWorkingDir)
+	builder.ProjectConfiguration.ResolvePrivateDependencies()
+	builder.ProjectConfiguration.ResolvePublicDependencies()
 
 	builder.ProjectConfiguration.Build()
+
+	// step 6 -> check benchmark
+	fmt.Println("this took", time.Since(startNow))
 }
 
-// provide option to go in the dir or not, depending on user preference
-func buildLibrary(args []string, subdir, projectWorkingDirectory string) {
-	libraryWorkingDirectory := filepath.Join(projectWorkingDirectory, subdir)
-	os.Chdir(libraryWorkingDirectory)
-	log.Println("Changing directory to ", libraryWorkingDirectory)
+func createLibEntries(projWorkingDir string) {
+	for _, subdir := range builder.ProjectConfiguration.Subdirectories {
+		libWorkingDir := subdir
+		libConfigFileName := filepath.Join(libWorkingDir, "lib.json")
 
-	// if subdirs are not specified, try to get them automatically
-	libraryConfigFileName := filepath.Join(libraryWorkingDirectory, "lib.json")
-	log.Println("Reading ", libraryConfigFileName)
+		var localLibConfig builder.LibraryProperties
+		filesystem.ReadLibraryConfigFile(libConfigFileName, &localLibConfig)
 
-	var localLibraryConfiguration builder.LibraryProperties
-	filesystem.ReadLibraryConfigFileContent(
-		libraryConfigFileName,
-		&localLibraryConfiguration,
-	)
+		// since libraries do not contain the main function, use `-c` flag
+		localLibConfig.SpecifyNoMain()
+		localLibConfig.ResolvePrivateIncludesGlobalPaths(libWorkingDir)
+		localLibConfig.ResolvePublicIncludesGlobalPaths(libWorkingDir)
+		localLibConfig.ResolveSourcesGlobalPaths(libWorkingDir)
+		localLibConfig.ResolvePrivateDependencies()
+		localLibConfig.ResolvePublicDependencies()
 
-	if len(localLibraryConfiguration.Sources) == 0 {
-		log.Fatal("THIS IS NOT YET SUPPORTED")
-		// @todo fix this
-		crawler.ScanDirectoryForSourceFiles(
-			args[0],
-			&localLibraryConfiguration.Sources,
-			false,
-		)
+		builder.LibrariesMap[localLibConfig.Name] = len(builder.LibConfigurations)
+		builder.LibConfigurations = append(builder.LibConfigurations, localLibConfig)
 	}
-
-	// since libraries do not contain the main function, use `-c` flag
-	localLibraryConfiguration.Flags = append(
-		localLibraryConfiguration.Flags,
-		"-c",
-	)
-	localLibraryConfiguration.Build()
-
-	resolveGlobalDependencies(
-		localLibraryConfiguration,
-		libraryWorkingDirectory,
-	)
-	// finally map the index and append the new config
-	builder.LibrariesMap[localLibraryConfiguration.Name] = len(
-		builder.LibrariesConfiguration,
-	)
-	builder.LibrariesConfiguration = append(
-		builder.LibrariesConfiguration,
-		localLibraryConfiguration,
-	)
-
-	// @todo fix this -> this is a terrible way of doing this
-	builder.ProjectConfiguration.Dependencies.Libraries = append(
-		builder.ProjectConfiguration.Dependencies.Libraries,
-		filepath.Join(libraryWorkingDirectory, localLibraryConfiguration.Name),
-	)
-
-	os.Chdir(projectWorkingDirectory)
-	log.Println("Changing directory back to ", projectWorkingDirectory)
 }
 
-func resolveGlobalDependencies(
-	libraryConfiguration builder.LibraryProperties,
-	libraryWorkingDirectory string,
-) {
-	// @todo this may not be needed
-	// for index, path := range libraryConfiguration.Sources {
-	// 	libraryConfiguration.Sources[index] = filepath.Join(libraryWorkingDirectory, path)
-	// }
-
-	for index, path := range libraryConfiguration.Includes.Public {
-		libraryConfiguration.Includes.Public[index] = filepath.Join(
-			libraryWorkingDirectory,
-			path,
-		)
+func buildLibs() {
+	for _, lib := range builder.LibConfigurations {
+		lib.Build()
 	}
 }
