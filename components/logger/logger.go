@@ -9,6 +9,8 @@ import (
 )
 
 func Setup() *os.File {
+	os.Mkdir("log", 0777)
+
 	// @todo ensure generation of log folder is done properly
 	currentTime := time.Now()
 	fileName := fmt.Sprintf("%-2d%-d%d-%d:%d:%d.log", currentTime.Year(), int(currentTime.Month()),

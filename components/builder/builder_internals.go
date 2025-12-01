@@ -20,7 +20,7 @@ var (
 )
 
 func setCompiler(libProprties LibraryProperties) {
-	compiler = "gcc"
+	compiler = "g++"
 }
 
 func setFlags(libProprties LibraryProperties) {
@@ -28,7 +28,10 @@ func setFlags(libProprties LibraryProperties) {
 }
 
 func setDefines(libProprties LibraryProperties) {
-
+	for _, item := range libProprties.Defines {
+		parsedArgument := "-D" + item
+		argumentList = append(argumentList, parsedArgument)
+	}
 }
 
 func setIncludes(libProprties LibraryProperties) {
