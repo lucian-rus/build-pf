@@ -20,7 +20,7 @@ var (
 )
 
 func setCompiler(libProprties LibraryProperties) {
-	compiler = "g++"
+	compiler = "gcc"
 }
 
 func setFlags(libProprties LibraryProperties) {

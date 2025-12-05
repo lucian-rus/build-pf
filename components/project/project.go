@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"gobi/components/builder"
 	"gobi/components/filesystem"
 	"log"
@@ -10,11 +11,16 @@ import (
 
 var (
 	projectDir string
+
+	dependencyTree = make(map[string][]string) // this maps the "build level"
+	// a build level is defined as the relative order in which the lib shall be built in order
+	// to have all it's dependencies fullfilled
+
+	buildLevelMap = make(map[string]int)
 )
 
 func Setup() {
-	//@todo this has to be properly done outside here
-
+	// @todo maybe add support for targeted build in the future. e.g `gobi build <path>`
 	projectDir, _ := os.Getwd()
 	projConfigFileName := filepath.Join(projectDir, "gobi.json")
 
@@ -28,6 +34,12 @@ func Setup() {
 	builder.ProjectConfiguration.ResolveSubdirPaths(projectDir)
 	builder.ProjectConfiguration.ResolveOutputPath(projectDir)
 
+	fmt.Println(builder.ProjectConfiguration.Name)
+	for _, item := range builder.ProjectConfiguration.Subdirectories {
+		fmt.Println(item)
+	}
+	// @todo treat defines added at project level shall be treated as project-wide
+
 	// step 1 -> setup filesystem for build to happen
 	filesystem.SetupFilesystem(builder.ProjectConfiguration)
 
@@ -39,11 +51,17 @@ func Setup() {
 
 func BuildLibraries() {
 	// step 4 -> build libs
-	buildLibs()
+	for _, lib := range builder.LibConfigurations {
+		lib.Build()
+	}
 }
 
 func BuildProject() {
 	// step 5 -> build proj (building proj requires running steps 3 beforehand)
+
+	// @todo maybe concat this to only iterate once through the libs
+	// while it loses configurability, gains a lot of speed
+	// maybe allow both methods
 	builder.ProjectConfiguration.ResolvePrivateIncludesGlobalPaths(projectDir)
 	builder.ProjectConfiguration.ResolvePublicIncludesGlobalPaths(projectDir)
 	builder.ProjectConfiguration.ResolveSourcesGlobalPaths(projectDir)

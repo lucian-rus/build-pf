@@ -3,6 +3,7 @@ package builder
 
 import (
 	"path/filepath"
+	"slices"
 )
 
 type LibraryProperties struct {
@@ -10,6 +11,10 @@ type LibraryProperties struct {
 	Defines []string `json:"defines"`
 	Sources []string `json:"sources"`
 	Flags   []string `json:"flags"`
+
+	// project inheritance
+	InheritFlags   bool `json:"inherit_flags"`
+	InheritDefines bool `json:"inherit_defines"`
 
 	Includes struct {
 		Public  []string `json:"public"`  // these includes can be accessed by libs that depend on this lib
@@ -94,9 +99,16 @@ func (lib *LibraryProperties) ResolvePrivateDependencies() {
 		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[index].Name)
 
 		lib.Includes.Private = append(lib.Includes.Private, LibConfigurations[index].Includes.Public...)
-		lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+		// extremely dumb way of doing this. @todo remove it
+		if !slices.Contains(lib.Flags, "-c") {
+			lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+		}
 	}
 }
+
+// treat library dependency as a graph - while not exactly a tree, can somewhat go through it like a tree
+// this allows us to explore the build level for each node
+// build level reflects the depth at which a certain library can be found
 
 func (lib *LibraryProperties) ResolvePublicDependencies() {
 	for _, dependency := range lib.Dependencies.Public {
@@ -104,7 +116,11 @@ func (lib *LibraryProperties) ResolvePublicDependencies() {
 		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[index].Name)
 
 		lib.Includes.Public = append(lib.Includes.Public, LibConfigurations[index].Includes.Public...)
-		lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+
+		// extremely dumb way of doing this. @todo remove it
+		if !slices.Contains(lib.Flags, "-c") {
+			lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+		}
 	}
 }
 
