@@ -36,9 +36,10 @@ type ProjectProperties struct {
 	Subdirectories []string `json:"subdirectories"`
 
 	BuildToolchainPath string `json:"build_toolchain_path"`
-	Compiler           string `json:"compiler"`
-	Linker             string `json:"linker"`
-	Assembler          string `json:"assembler"`
+	// @maybe move compiler to library level
+	Compiler  string `json:"compiler"`
+	Linker    string `json:"linker"`
+	Assembler string `json:"assembler"`
 
 	OutputPath               string `json:"output_path"`
 	BuildMetadataEnable      bool   `json:"build_meta_data_enable"`
@@ -50,7 +51,12 @@ type ProjectProperties struct {
 
 var (
 	ProjectConfiguration ProjectProperties // this HAS to be unique
+
+	// @todo update this to map to do things as eficient as possible
 	LibConfigurations    []LibraryProperties
+	LibConfigurationsMap = make(
+		map[string]LibraryProperties,
+	) // meant to hold the configurations instead of the array
 
 	LibrariesMap = make(
 		map[string]int,
