@@ -19,8 +19,9 @@ var (
 	argumentList []string
 )
 
+// @todo add support for library-specific compiler. until then, it shall be defaulted.
 func setCompiler(libProprties LibraryProperties) {
-	compiler = "gcc"
+	compiler = ProjectConfiguration.Compiler
 }
 
 func setFlags(libProprties LibraryProperties) {
