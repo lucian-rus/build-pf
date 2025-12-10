@@ -22,8 +22,7 @@ func createLibEntries(projWorkingDir string) {
 		localLibConfig.ResolvePrivateDependencies()
 		localLibConfig.ResolvePublicDependencies()
 
-		builder.LibrariesMap[localLibConfig.Name] = len(builder.LibConfigurations)
-		builder.LibConfigurations = append(builder.LibConfigurations, localLibConfig)
+		builder.LibConfigurations[localLibConfig.Name] = localLibConfig
 
 		dependencyTree[localLibConfig.Name] = append(dependencyTree[localLibConfig.Name], localLibConfig.Dependencies.Public...)
 		dependencyTree[localLibConfig.Name] = append(dependencyTree[localLibConfig.Name], localLibConfig.Dependencies.Private...)

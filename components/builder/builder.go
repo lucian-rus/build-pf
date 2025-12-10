@@ -49,18 +49,13 @@ type ProjectProperties struct {
 	LibraryProperties
 }
 
+// @todo shall separate builder and project
 var (
 	ProjectConfiguration ProjectProperties // this HAS to be unique
 
-	// @todo update this to map to do things as eficient as possible
-	LibConfigurations    []LibraryProperties
-	LibConfigurationsMap = make(
+	LibConfigurations = make(
 		map[string]LibraryProperties,
 	) // meant to hold the configurations instead of the array
-
-	LibrariesMap = make(
-		map[string]int,
-	) // maps the name of a library to its index in the `LibConfigurations` array for fast access
 )
 
 func (proj *ProjectProperties) ResolveSubdirPaths(projectPath string) {
@@ -101,10 +96,9 @@ func (lib *LibraryProperties) ResolveSourcesGlobalPaths(libraryPath string) {
 
 func (lib *LibraryProperties) ResolvePrivateDependencies() {
 	for _, dependency := range lib.Dependencies.Private {
-		index := LibrariesMap[dependency]
-		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[index].Name)
+		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[dependency].Name)
 
-		lib.Includes.Private = append(lib.Includes.Private, LibConfigurations[index].Includes.Public...)
+		lib.Includes.Private = append(lib.Includes.Private, LibConfigurations[dependency].Includes.Public...)
 		// extremely dumb way of doing this. @todo remove it
 		if !slices.Contains(lib.Flags, "-c") {
 			lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
@@ -118,10 +112,9 @@ func (lib *LibraryProperties) ResolvePrivateDependencies() {
 
 func (lib *LibraryProperties) ResolvePublicDependencies() {
 	for _, dependency := range lib.Dependencies.Public {
-		index := LibrariesMap[dependency]
-		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[index].Name)
+		libPath := filepath.Join(ProjectConfiguration.OutputPath, LibConfigurations[dependency].Name)
 
-		lib.Includes.Public = append(lib.Includes.Public, LibConfigurations[index].Includes.Public...)
+		lib.Includes.Public = append(lib.Includes.Public, LibConfigurations[dependency].Includes.Public...)
 
 		// extremely dumb way of doing this. @todo remove it
 		if !slices.Contains(lib.Flags, "-c") {

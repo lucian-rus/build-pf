@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 )
 
+// @todo crawler shall store last edited timestamp for each file, as this will be used by incremental build
 func ScanDirectoryForSourceFiles(
 	directoryPath string,
 	sourceFilesList *[]string,
