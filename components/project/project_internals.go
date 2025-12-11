@@ -3,46 +3,73 @@ package project
 import (
 	"fmt"
 	"gobi/components/builder"
+	"gobi/components/crawler"
+	"gobi/components/env"
 	"gobi/components/filesystem"
+	"gobi/components/parser"
 	"path/filepath"
 )
 
-func createLibEntries(projWorkingDir string) {
+func createLibEntries() {
 	for _, subdir := range builder.ProjectConfiguration.Subdirectories {
 		libConfigFileName := filepath.Join(subdir, "lib.json")
 
 		var localLibConfig builder.LibraryProperties
+		localLibConfig.Root, _ = filepath.Abs(subdir)
 		filesystem.ReadLibraryConfigFile(libConfigFileName, &localLibConfig)
 
-		// since libraries do not contain the main function, use `-c` flag
-		localLibConfig.SpecifyNoMain()
-		localLibConfig.ResolvePrivateIncludesGlobalPaths(subdir)
-		localLibConfig.ResolvePublicIncludesGlobalPaths(subdir)
-		localLibConfig.ResolveSourcesGlobalPaths(subdir)
-		localLibConfig.ResolvePrivateDependencies()
-		localLibConfig.ResolvePublicDependencies()
+		if len(localLibConfig.Sources) == 0 {
+			crawler.ScanDirectoryForSources(localLibConfig.Root, &localLibConfig.Sources)
+		} else {
+			localLibConfig.ResolveSourcesGlobalPaths()
+		}
+		fmt.Println("================================================")
+		for _, source := range localLibConfig.Sources {
+			fmt.Println(source)
+			parser.GetIncludesList(source)
+		}
+
+		fmt.Println("================================================")
+
+		crawler.ScanDirectoryForHeaders(localLibConfig.Root, &localLibConfig.Headers)
 
 		builder.LibConfigurations[localLibConfig.Name] = localLibConfig
+	}
+}
 
-		dependencyTree[localLibConfig.Name] = append(dependencyTree[localLibConfig.Name], localLibConfig.Dependencies.Public...)
-		dependencyTree[localLibConfig.Name] = append(dependencyTree[localLibConfig.Name], localLibConfig.Dependencies.Private...)
+func resolveLibraries() {
+	for _, lib := range builder.LibConfigurations {
+		// since libraries do not contain the main function, use `-c` flag
+		lib.SpecifyNoMain()
+		lib.ResolvePrivateIncludesGlobalPaths()
+		lib.ResolvePublicIncludesGlobalPaths()
+		lib.ResolvePrivateDependencies()
+		lib.ResolvePublicDependencies()
+
+		dependencyTree[lib.Name] = append(dependencyTree[lib.Name], lib.Dependencies.Public...)
+		dependencyTree[lib.Name] = append(dependencyTree[lib.Name], lib.Dependencies.Private...)
+
+		builder.LibConfigurations[lib.Name] = lib // update the map
+	}
+
+	// return here to not debug anymore
+	if !env.EnableDebugData {
+		return
 	}
 
 	for _, lib := range builder.LibConfigurations {
 		fmt.Println(lib.Name)
-
 		fmt.Println("	* private")
 		for _, item := range lib.Includes.Private {
-			fmt.Println(item)
+			fmt.Println("	- ", item)
 		}
 
 		fmt.Println("	* public")
 		for _, item := range lib.Includes.Public {
-			fmt.Println(item)
+			fmt.Println("	- ", item)
 		}
 	}
 
-	fmt.Println("---------------------")
 	fmt.Println("dependency list:")
 
 	for key, depList := range dependencyTree {
