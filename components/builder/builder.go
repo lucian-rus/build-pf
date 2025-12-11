@@ -24,10 +24,12 @@ type LibraryProperties struct {
 	Dependencies struct {
 		Public  []string `json:"public"`  // allows dependencies to be inherited by other libs
 		Private []string `json:"private"` // dependencies will NOT be inherited
-
-		// this is internal
-		Libraries []string // consider if this is public or not
 	}
+
+	// internals -> not meant to be configured via json
+	Root          string
+	LinkedObjects []string
+	Headers       []string
 }
 
 type ProjectProperties struct {
@@ -47,6 +49,9 @@ type ProjectProperties struct {
 
 	// a project is also a library with other libraries linked
 	LibraryProperties
+}
+
+type BuildReport struct {
 }
 
 // @todo shall separate builder and project
@@ -74,21 +79,21 @@ func (lib *LibraryProperties) SpecifyNoMain() {
 
 // @todo maybe extract a common method, as this repeats the code a bit
 
-func (lib *LibraryProperties) ResolvePrivateIncludesGlobalPaths(libraryPath string) {
+func (lib *LibraryProperties) ResolvePrivateIncludesGlobalPaths() {
 	for index, include := range lib.Includes.Private {
-		lib.Includes.Private[index] = filepath.Join(libraryPath, include)
+		lib.Includes.Private[index] = filepath.Join(lib.Root, include)
 	}
 }
 
-func (lib *LibraryProperties) ResolvePublicIncludesGlobalPaths(libraryPath string) {
+func (lib *LibraryProperties) ResolvePublicIncludesGlobalPaths() {
 	for index, include := range lib.Includes.Public {
-		lib.Includes.Public[index] = filepath.Join(libraryPath, include)
+		lib.Includes.Public[index] = filepath.Join(lib.Root, include)
 	}
 }
 
-func (lib *LibraryProperties) ResolveSourcesGlobalPaths(libraryPath string) {
+func (lib *LibraryProperties) ResolveSourcesGlobalPaths() {
 	for index, source := range lib.Sources {
-		lib.Sources[index] = filepath.Join(libraryPath, source)
+		lib.Sources[index] = filepath.Join(lib.Root, source)
 	}
 }
 
@@ -101,7 +106,7 @@ func (lib *LibraryProperties) ResolvePrivateDependencies() {
 		lib.Includes.Private = append(lib.Includes.Private, LibConfigurations[dependency].Includes.Public...)
 		// extremely dumb way of doing this. @todo remove it
 		if !slices.Contains(lib.Flags, "-c") {
-			lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
 		}
 	}
 }
@@ -118,7 +123,7 @@ func (lib *LibraryProperties) ResolvePublicDependencies() {
 
 		// extremely dumb way of doing this. @todo remove it
 		if !slices.Contains(lib.Flags, "-c") {
-			lib.Dependencies.Libraries = append(lib.Dependencies.Libraries, libPath)
+			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
 		}
 	}
 }

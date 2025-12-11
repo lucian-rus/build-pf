@@ -44,12 +44,14 @@ func Setup() {
 	filesystem.SetupFilesystem(builder.ProjectConfiguration)
 
 	// step 2 -> create lib entry for all dependencies (@todo use goroutines)
-	createLibEntries(projectDir)
+	createLibEntries()
 	// step 3 -> sort based on dependency tree
 
 }
 
 func BuildLibraries() {
+	resolveLibraries()
+
 	// step 4 -> build libs
 	for _, lib := range builder.LibConfigurations {
 		lib.Build()
@@ -62,9 +64,9 @@ func BuildProject() {
 	// @todo maybe concat this to only iterate once through the libs
 	// while it loses configurability, gains a lot of speed
 	// maybe allow both methods
-	builder.ProjectConfiguration.ResolvePrivateIncludesGlobalPaths(projectDir)
-	builder.ProjectConfiguration.ResolvePublicIncludesGlobalPaths(projectDir)
-	builder.ProjectConfiguration.ResolveSourcesGlobalPaths(projectDir)
+	builder.ProjectConfiguration.ResolvePrivateIncludesGlobalPaths()
+	builder.ProjectConfiguration.ResolvePublicIncludesGlobalPaths()
+	builder.ProjectConfiguration.ResolveSourcesGlobalPaths()
 	builder.ProjectConfiguration.ResolvePrivateDependencies()
 	builder.ProjectConfiguration.ResolvePublicDependencies()
 

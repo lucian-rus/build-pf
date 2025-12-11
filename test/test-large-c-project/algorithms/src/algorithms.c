@@ -1,4 +1,4 @@
-#include "../inc/algorithms.h"
+#include "algorithms.h"
 #include <stdio.h>
 
 void algorithm_function() {

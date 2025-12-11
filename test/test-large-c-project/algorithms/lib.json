@@ -1,14 +1,9 @@
 {
     "name": "lib_algo",
 
-    "sources": [
-        "src/algorithms.c"
-    ],
-
     "includes": {
         "public": [
             "inc"
-        ],
-        "private": []
+        ]
     }
 }

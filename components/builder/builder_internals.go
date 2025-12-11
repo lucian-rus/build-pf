@@ -59,7 +59,7 @@ func setOutputProperties(libProprties LibraryProperties) {
 func setInputProperties(libProprties LibraryProperties) {
 	// set target source file
 	argumentList = append(argumentList, libProprties.Sources...)
-	argumentList = append(argumentList, libProprties.Dependencies.Libraries...)
+	argumentList = append(argumentList, libProprties.LinkedObjects...)
 }
 
 func runBuilder() error {
