@@ -51,6 +51,9 @@ type ProjectProperties struct {
 	LibraryProperties
 }
 
+type BuildReport struct {
+}
+
 // @todo shall separate builder and project
 var (
 	ProjectConfiguration ProjectProperties // this HAS to be unique

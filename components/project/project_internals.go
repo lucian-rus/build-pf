@@ -23,14 +23,12 @@ func createLibEntries() {
 		} else {
 			localLibConfig.ResolveSourcesGlobalPaths()
 		}
-		fmt.Println("================================================")
+
+		// @todo update this to properly handle includes -> extract required files and analyse the libs
+		// for the available header files
 		for _, source := range localLibConfig.Sources {
-			fmt.Println(source)
 			parser.GetIncludesList(source)
 		}
-
-		fmt.Println("================================================")
-
 		crawler.ScanDirectoryForHeaders(localLibConfig.Root, &localLibConfig.Headers)
 
 		builder.LibConfigurations[localLibConfig.Name] = localLibConfig

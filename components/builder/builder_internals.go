@@ -25,7 +25,6 @@ func setCompiler(libProprties LibraryProperties) {
 }
 
 func setFlags(libProprties LibraryProperties) {
-	fmt.Println(libProprties.Flags)
 	argumentList = append(argumentList, libProprties.Flags...)
 }
 

@@ -1,4 +1,4 @@
-#include "../inc/app.h"
+#include "app.h"
 #include <stdio.h>
 
 void app_info() {

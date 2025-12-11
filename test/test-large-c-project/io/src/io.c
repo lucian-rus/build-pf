@@ -1,4 +1,4 @@
-#include "../inc/io.h"
+#include "io.h"
 #include <stdio.h>
 
 void io_function() {
