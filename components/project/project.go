@@ -34,7 +34,6 @@ func Setup() {
 	builder.ProjectConfiguration.ResolveSubdirPaths(projectDir)
 	builder.ProjectConfiguration.ResolveOutputPath(projectDir)
 
-	fmt.Println(builder.ProjectConfiguration.Name)
 	for _, item := range builder.ProjectConfiguration.Subdirectories {
 		fmt.Println(item)
 	}
@@ -50,7 +49,7 @@ func Setup() {
 }
 
 func BuildLibraries() {
-	resolveLibraries()
+	prepareLibrariesforBuild()
 
 	// step 4 -> build libs
 	for _, lib := range builder.LibConfigurations {

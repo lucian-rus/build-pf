@@ -3,10 +3,10 @@ package project
 import (
 	"fmt"
 	"gobi/components/builder"
-	"gobi/components/crawler"
 	"gobi/components/env"
 	"gobi/components/filesystem"
-	"gobi/components/parser"
+	"gobi/components/project/crawler"
+	"gobi/components/project/parser"
 	"path/filepath"
 )
 
@@ -35,7 +35,7 @@ func createLibEntries() {
 	}
 }
 
-func resolveLibraries() {
+func prepareLibrariesforBuild() {
 	for _, lib := range builder.LibConfigurations {
 		// since libraries do not contain the main function, use `-c` flag
 		lib.SpecifyNoMain()
