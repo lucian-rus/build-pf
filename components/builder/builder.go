@@ -52,6 +52,10 @@ type ProjectProperties struct {
 }
 
 type BuildReport struct {
+	Files []struct {
+		Name      string
+		Timestamp int
+	} `json:"files"`
 }
 
 // @todo shall separate builder and project
