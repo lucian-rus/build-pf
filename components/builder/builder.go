@@ -51,12 +51,13 @@ type ProjectProperties struct {
 	LibraryProperties
 }
 
-type BuildReport struct {
-	Files []struct {
-		Name      string
-		Timestamp int
-	} `json:"files"`
-}
+// @todo build cache -> this has to be done in order to support incremental build
+// type BuildReport struct {
+// 	Files []struct {
+// 		Name      string
+// 		Timestamp int
+// 	} `json:"files"`
+// }
 
 // @todo shall separate builder and project
 var (
@@ -65,6 +66,9 @@ var (
 	LibConfigurations = make(
 		map[string]LibraryProperties,
 	) // meant to hold the configurations instead of the array
+
+	BuildData = make(map[string]int)
+	LibsBuilt = []string{}
 )
 
 func (proj *ProjectProperties) ResolveSubdirPaths(projectPath string) {
