@@ -18,8 +18,9 @@ func createLibEntries() {
 		localLibConfig.Root, _ = filepath.Abs(subdir)
 		filesystem.ReadLibraryConfigFile(libConfigFileName, &localLibConfig)
 
+		// @todo first check if binary exists. if so, only then do the source check
 		if len(localLibConfig.Sources) == 0 {
-			crawler.ScanDirectoryForSources(localLibConfig.Root, &localLibConfig.Sources)
+			crawler.ScanDirectoryForSources(localLibConfig.Root, &localLibConfig.Sources, localLibConfig.Name)
 		} else {
 			localLibConfig.ResolveSourcesGlobalPaths()
 		}
