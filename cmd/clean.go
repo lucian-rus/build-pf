@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"gobi/components/project"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -46,5 +45,5 @@ func runCleanCmd(args []string) {
 		log.Fatal(err)
 	}
 
-	project.CleanProject()
+	// project.CleanProject()
 }

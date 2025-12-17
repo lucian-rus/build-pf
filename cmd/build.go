@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"gobi/modules/builder"
 	"log"
 	"time"
 
 	"github.com/spf13/cobra"
-
-	"gobi/components/project"
 )
 
 var buildCmd = &cobra.Command{
@@ -29,8 +28,7 @@ func runBuildCmd(args []string) {
 
 	startNow := time.Now()
 
-	project.BuildLibraries()
-	project.BuildProject()
+	builder.Build()
 
 	// step 6 -> check benchmark
 	fmt.Println("this took", time.Since(startNow))
