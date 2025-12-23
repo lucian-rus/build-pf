@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gobi/modules/builder"
+	"gobi/modules/cache"
 	"gobi/modules/env/crawler"
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
@@ -42,8 +43,21 @@ func loadProjectConfiguration() error {
 	return nil
 }
 
-func loadBuildCache() {
+func loadBuildCache() error {
+	fmt.Println("---------------- loading cache ---------------------")
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, CacheConfigFileName)
 
+	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(fileContent, &BuildCacheMap); err != nil {
+		log.Println("Error when unmarshalling JSON file", cacheFilePath)
+		return err
+	}
+
+	return nil
 }
 
 func loadLibraryConfigurations() error {
@@ -71,6 +85,15 @@ func loadLibraryConfigurations() error {
 			localLibConfig.ResolveSourcesGlobalPaths()
 		}
 
+		for _, source := range localLibConfig.Sources {
+			var aux int
+
+			crawler.GetTimestampForFile(source, &aux)
+			BuildCacheMap[source] = cache.BuildCache{
+				Name:      source,
+				Timestamp: aux,
+			}
+		}
 		// @todo update this to properly handle includes -> extract required files and analyse the libs
 		// for the available header files
 		// for _, source := range localLibConfig.Sources {

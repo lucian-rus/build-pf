@@ -19,6 +19,16 @@ func ScanDirectoryForHeaders(dirPath string, fileList *[]string) error {
 func ScanDirectoryForConfigurationFiles() {
 }
 
+func GetTimestampForFile(filePath string, timestamp *int) error {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return err
+	}
+	(*timestamp) = int(info.ModTime().Unix())
+
+	return nil
+}
+
 func ScanBuildDirectoryForLibraries(dirPath string) error {
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, _ error) error {
 

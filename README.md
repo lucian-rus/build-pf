@@ -12,6 +12,8 @@ GoBI - go build infra
 * add scripts that allow users to build from source
 * proper readme
 * proper architecture
+* search for CMakeLists and generate automatically the lib.json files
+* global paths are resolved relative to the parent lib -> this is incorrect as it generates dumb paths
 
 ### building and running
 * to build, run `go build` and copy the `gobi` executable to a global path

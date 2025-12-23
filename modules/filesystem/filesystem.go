@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -8,13 +9,15 @@ import (
 )
 
 func CreateDirectory(dirPath string) error {
+	fmt.Println(dirPath)
 	dirsToCreate := strings.Split(dirPath, "/")
+	// @todo make this happen only on linux, as the "/" creates an empty entry at the beginning of the array
+	dirsToCreate = dirsToCreate[1:]
+	lastBuiltDir := "/" // this is extremely linux-specific @todo fix - works for now
 
-	lastBuiltDir := ""
 	for _, dir := range dirsToCreate {
 		// this appends the last built directory in  to provide proper pathing
 		lastBuiltDir = filepath.Join(lastBuiltDir, dir)
-
 		if DoesEntityExist(lastBuiltDir) {
 			continue
 		}

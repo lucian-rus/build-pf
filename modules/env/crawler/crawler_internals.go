@@ -14,18 +14,10 @@ func scanDirectoryForFiles(dirPath string, fileList *[]string, fileType string) 
 		}
 
 		sourceFilePath, err := filepath.Abs(path)
-
-		// fmt.Println(builder.BuildData)
-		// // @todo update this. the name shall NOT Be passed as param
-		// timestamp, ok := builder.BuildData[sourceFilePath]
-		// if ok && timestamp == int(info.ModTime().Unix()) && slices.Contains(builder.LibsBuilt, name) {
-		// 	return nil
-		// }
-
 		fmt.Println("Scanning directory for files -", dirPath)
-		// builder.BuildData[sourceFilePath] = int(info.ModTime().Unix())
 		fmt.Println("	* found file: ", sourceFilePath)
-		*fileList = append(*fileList, sourceFilePath)
+
+		(*fileList) = append(*fileList, sourceFilePath)
 		return err
 	})
 
