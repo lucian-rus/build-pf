@@ -2,6 +2,19 @@
 
 GoBI - go build infra
 
+### high prio -> for alpha
+* refactor for easier feature extension
+* get library dependency sorted
+* ensure incremental build is robust and works properly
+* implement set of smoke tests, similar to pacgo
+* sort out logging and enable debugging
+* test on Windows as well
+* add scripts that allow users to build from source
+* proper readme
+* proper architecture
+* search for CMakeLists and generate automatically the lib.json files
+* global paths are resolved relative to the parent lib -> this is incorrect as it generates dumb paths
+
 ### building and running
 * to build, run `go build` and copy the `gobi` executable to a global path
 * in the c/c++ project directory run `gobi <command>` 
