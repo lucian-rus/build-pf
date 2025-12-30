@@ -19,7 +19,8 @@ func Setup(targetPath string) *os.File {
 
 	// @todo ensure generation of log folder is done properly
 	currentTime := time.Now()
-	fileName := fmt.Sprintf("%-2d%-d%d-%d:%d:%d.log", currentTime.Year(), int(currentTime.Month()),
+	// Use a Windows-safe filename (no ':' characters). Format: YYYY-MM-DD_HH-MM-SS.log
+	fileName := fmt.Sprintf("%04d-%02d-%02d_%02d-%02d-%02d.log", currentTime.Year(), int(currentTime.Month()),
 		currentTime.Day(), currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 
 	filePath := filepath.Join(logDirPath, fileName)
