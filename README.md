@@ -17,7 +17,7 @@ GoBI - go build infra
 
 ### building and running
 * to build, run `go build` and copy the `gobi` executable to a global path
-* in the c/c++ project directory run `gobi <command>` 
+* in the c/c++ project directory run `gobi <command>` (on windows, run `.\gobi <command>`)
 
 ### in work
 
