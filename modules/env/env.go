@@ -8,6 +8,7 @@ import (
 	"gobi/modules/library"
 	"gobi/modules/project"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -45,21 +46,22 @@ func Setup() {
 }
 
 // @todo check if this actually works as intended
-func CacheBuildData() {
+func CacheBuildData() error {
 	data, err := json.MarshalIndent(BuildCacheMap, "", "  ")
 	if err != nil {
-		// Optionally log or handle the error
-		return
+		return err
 	}
-	f, err := os.Create(CacheConfigFileName)
+
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, CacheConfigFileName)
+	file, err := os.Create(cacheFilePath)
 	if err != nil {
-		// Optionally log or handle the error
-		return
+		return err
 	}
-	defer f.Close()
-	_, err = f.Write(data)
-	if err != nil {
-		// Optionally log or handle the error
-		return
+
+	defer file.Close()
+	if _, err := file.Write(data); err != nil {
+		return err
 	}
+
+	return nil
 }

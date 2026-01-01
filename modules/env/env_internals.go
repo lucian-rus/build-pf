@@ -57,6 +57,10 @@ func loadBuildCache() error {
 		return err
 	}
 
+	for key, value := range BuildCacheMap {
+		fmt.Println(key, value)
+	}
+
 	return nil
 }
 
@@ -85,22 +89,19 @@ func loadLibraryConfigurations() error {
 			localLibConfig.ResolveSourcesGlobalPaths()
 		}
 
+		// @todo this should not be here. keep it here for now as it works - should extract incremental build
 		for _, source := range localLibConfig.Sources {
 			var aux int
 
 			crawler.GetTimestampForFile(source, &aux)
+
 			BuildCacheMap[source] = cache.BuildCache{
-				Name:      source,
 				Timestamp: aux,
+				Output:    filepath.Join(ProjectConfiguration.OutputPath, localLibConfig.Name),
 			}
 		}
-		// @todo update this to properly handle includes -> extract required files and analyse the libs
-		// for the available header files
-		// for _, source := range localLibConfig.Sources {
-		// 	parser.GetIncludesList(source)
-		// }
-		crawler.ScanDirectoryForHeaders(localLibConfig.Root, &localLibConfig.Headers)
 
+		crawler.ScanDirectoryForHeaders(localLibConfig.Root, &localLibConfig.Headers)
 		LibConfigurations[localLibConfig.Name] = localLibConfig
 	}
 

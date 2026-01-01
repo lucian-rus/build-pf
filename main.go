@@ -23,6 +23,6 @@ func main() {
 
 	cmd.Execute()
 
-	// // @todo check how pacgo does this
-	// project.CacheBuildData()
+	// @todo check how pacgo does this
+	env.CacheBuildData()
 }
