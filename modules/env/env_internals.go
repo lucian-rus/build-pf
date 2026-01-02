@@ -9,43 +9,11 @@ import (
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
 	"log"
-	"os"
 	"path/filepath"
 )
 
-func loadProjectConfiguration() error {
-	fmt.Println("--------------- loading project --------------------")
-	projectDir, _ := os.Getwd()
-	projConfigFileName := filepath.Join(projectDir, ProjectConfigFileName)
-
-	fileContent, err := filesystem.ReadJsonConfigFile(projConfigFileName)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(fileContent, &ProjectConfiguration); err != nil {
-		log.Println("Error when unmarshalling JSON file", projConfigFileName)
-		return err
-	}
-
-	// @todo update the formatter
-	if EnableDebugData {
-		fmt.Println("name of project:		", ProjectConfiguration.Name)
-		fmt.Println("list of private includes:	", ProjectConfiguration.Includes.Private)
-		fmt.Println("list of public includes:	", ProjectConfiguration.Includes.Public)
-		fmt.Println("list of private dependencies:	", ProjectConfiguration.Dependencies.Private)
-		fmt.Println("list of public dependencies:	", ProjectConfiguration.Dependencies.Public)
-	}
-
-	ProjectConfiguration.ResolveSubdirPaths(projectDir)
-	ProjectConfiguration.ResolveOutputPath(projectDir)
-
-	return nil
-}
-
 func loadBuildCache() error {
-	fmt.Println("---------------- loading cache ---------------------")
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, CacheConfigFileName)
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
 	if err != nil {
@@ -60,6 +28,18 @@ func loadBuildCache() error {
 	for key, value := range BuildCacheMap {
 		fmt.Println(key, value)
 	}
+
+	return nil
+}
+
+func loadSourceCache() error {
+	fmt.Println("------------ loading source cache ------------------")
+
+	return nil
+}
+
+func loadHeaderCache() error {
+	fmt.Println("------------ loading header cache ------------------")
 
 	return nil
 }
@@ -82,30 +62,76 @@ func loadLibraryConfigurations() error {
 			return err
 		}
 
-		// @todo first check if binary exists. if so, only then do the source check
+		// @todo first check if binary exists. if so, only then do the source check - this is done in a dumb way
 		if len(localLibConfig.Sources) == 0 {
-			crawler.ScanDirectoryForSources(localLibConfig.Root, &localLibConfig.Sources)
+			crawler.ScanDirectoryForFiles(localLibConfig.Root, &localLibConfig.Sources, ".c")
 		} else {
 			localLibConfig.ResolveSourcesGlobalPaths()
 		}
 
-		// @todo this should not be here. keep it here for now as it works - should extract incremental build
-		for _, source := range localLibConfig.Sources {
-			var aux int
-
-			crawler.GetTimestampForFile(source, &aux)
-
-			BuildCacheMap[source] = cache.BuildCache{
-				Timestamp: aux,
-				Output:    filepath.Join(ProjectConfiguration.OutputPath, localLibConfig.Name),
-			}
-		}
-
-		crawler.ScanDirectoryForHeaders(localLibConfig.Root, &localLibConfig.Headers)
+		crawler.ScanDirectoryForFiles(localLibConfig.Root, &localLibConfig.Headers, ".h")
 		LibConfigurations[localLibConfig.Name] = localLibConfig
 	}
 
 	return nil
+}
+
+func scanEnvForSourceFiles() {
+	fmt.Println("-------------- scanning sources --------------------")
+
+	var sourceList []string
+	crawler.ScanDirectoryForFiles(".", &sourceList, ".c")
+
+	for _, source := range sourceList {
+		var lastEditTimestamp int
+		crawler.GetTimestampForFile(source, &lastEditTimestamp)
+
+		SourceCacheMap[filepath.Base(source)] = cache.SourceCache{
+			FileCache: cache.FileCache{
+				Path:      source,
+				Timestamp: lastEditTimestamp,
+			},
+		}
+	}
+
+	// if debug data is disabled, do not print data
+	if !EnableDebugData {
+		return
+	}
+
+	fmt.Println("Source map:")
+	for key, value := range SourceCacheMap {
+		fmt.Println(key, value)
+	}
+}
+
+func scanEnvForHeaderFiles() {
+	fmt.Println("-------------- scanning headers --------------------")
+
+	var headerList []string
+	crawler.ScanDirectoryForFiles(".", &headerList, ".h")
+
+	for _, header := range headerList {
+		var lastEditTimestamp int
+		crawler.GetTimestampForFile(header, &lastEditTimestamp)
+
+		HeaderCacheMap[filepath.Base(header)] = cache.HeaderCache{
+			FileCache: cache.FileCache{
+				Path:      header,
+				Timestamp: lastEditTimestamp,
+			},
+		}
+	}
+
+	// if debug data is disabled, do not print data
+	if !EnableDebugData {
+		return
+	}
+
+	fmt.Println("Header map:")
+	for key, value := range HeaderCacheMap {
+		fmt.Println(key, value)
+	}
 }
 
 func prepareLibrariesforBuild() {

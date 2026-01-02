@@ -24,5 +24,5 @@ func main() {
 	cmd.Execute()
 
 	// @todo check how pacgo does this
-	env.CacheBuildData()
+	env.CacheData()
 }

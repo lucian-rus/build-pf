@@ -7,14 +7,17 @@ import (
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
 	"gobi/modules/project"
-	"os"
 	"path/filepath"
 )
 
 const (
 	ProjectConfigFileName = "gobi.json"
 	LibConfigFileName     = "lib.json"
-	CacheConfigFileName   = "cache.json"
+
+	// cache files
+	BuildCacheFileName  = "cache/build-cache.json"
+	SourceCacheFileName = "cache/source-cache.json"
+	HeaderCacheFileName = "cache/header-cache.json"
 
 	// enable debugging/printing of data
 	EnableDebugData = true
@@ -25,14 +28,22 @@ var (
 	ProjectConfiguration project.ProjectProperties
 
 	LibConfigurations = make(map[string]library.LibraryProperties)
-	BuildCacheMap     = make(map[string]cache.BuildCache)
 
-// internal
+	// internal
+	BuildCacheMap  = make(map[string]cache.BuildCache)
+	SourceCacheMap = make(map[string]cache.SourceCache)
+	HeaderCacheMap = make(map[string]cache.HeaderCache)
 )
 
 func Setup() {
 	loadProjectConfiguration()
 	loadBuildCache()
+
+	// @todo get a way to fix files that have the same name.
+	// some projects may have multiple files having the same name
+	// this will cause key conflicts. check how to fix
+	scanEnvForSourceFiles()
+	scanEnvForHeaderFiles()
 
 	// load library configuration AFTER the cache in order to avoid unnecessary crawling
 	loadLibraryConfigurations()
@@ -43,25 +54,32 @@ func Setup() {
 
 	// after loading is done, start creating required directories
 	filesystem.CreateDirectory(ProjectConfiguration.OutputPath)
+	filesystem.CreateDirectory(filepath.Join(ProjectConfiguration.OutputPath, "cache"))
+	filesystem.CreateDirectory(filepath.Join(ProjectConfiguration.OutputPath, "libs"))
 }
 
 // @todo check if this actually works as intended
-func CacheBuildData() error {
+func CacheData() error {
 	data, err := json.MarshalIndent(BuildCacheMap, "", "  ")
 	if err != nil {
 		return err
 	}
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, CacheConfigFileName)
-	file, err := os.Create(cacheFilePath)
+	data, err = json.MarshalIndent(SourceCacheMap, "", "  ")
 	if err != nil {
 		return err
 	}
+	cacheFilePath = filepath.Join(ProjectConfiguration.OutputPath, SourceCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	defer file.Close()
-	if _, err := file.Write(data); err != nil {
+	data, err = json.MarshalIndent(HeaderCacheMap, "", "  ")
+	if err != nil {
 		return err
 	}
+	cacheFilePath = filepath.Join(ProjectConfiguration.OutputPath, HeaderCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
 
 	return nil
 }

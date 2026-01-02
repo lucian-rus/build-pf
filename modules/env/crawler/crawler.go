@@ -1,19 +1,27 @@
 package crawler
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
-// @todo crawler shall store last edited timestamp for each file, as this will be used by incremental build
-func ScanDirectoryForSources(dirPath string, fileList *[]string) error {
-	// @todo at the moment this only supports c files. should be able to support cpp as well
-	return scanDirectoryForFiles(dirPath, fileList, ".c")
-}
+func ScanDirectoryForFiles(dirPath string, fileList *[]string, fileType string) error {
+	// at the moment, this functions support both absolute and relative paths. tbd what would be best
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, _ error) error {
+		if filepath.Ext(info.Name()) != fileType {
+			return nil
+		}
 
-// @todo remove name as param
-func ScanDirectoryForHeaders(dirPath string, fileList *[]string) error {
-	return scanDirectoryForFiles(dirPath, fileList, ".h")
+		sourceFilePath, err := filepath.Abs(path)
+		fmt.Println("Scanning directory for files -", dirPath)
+		fmt.Println("	* found file: ", sourceFilePath)
+
+		(*fileList) = append(*fileList, sourceFilePath)
+		return err
+	})
+
+	return err
 }
 
 func ScanDirectoryForConfigurationFiles() {
