@@ -16,7 +16,7 @@ func CreateDirectory(dirPath string) error {
 	}
 
 	// use MkdirAll which works on Windows and Unix and creates any necessary parents.
-	if err := os.MkdirAll(normalizedDirPath, 0755); err != nil {
+	if err := os.MkdirAll(normalizedDirPath, 0777); err != nil {
 		return err
 	}
 
