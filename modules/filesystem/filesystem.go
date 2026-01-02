@@ -7,16 +7,16 @@ import (
 )
 
 func CreateDirectory(dirPath string) error {
-	// Normalize path and create all parent directories in a cross-platform way.
-	cleaned := filepath.Clean(dirPath)
+	// normalize path and create all parent directories in a cross-platform way.
+	normalizedDirPath := filepath.Clean(dirPath)
 
-	// If it already exists, nothing to do.
-	if DoesEntityExist(cleaned) {
+	// if it already exists, nothing to do.
+	if DoesEntityExist(normalizedDirPath) {
 		return nil
 	}
 
-	// Use MkdirAll which works on Windows and Unix and creates any necessary parents.
-	if err := os.MkdirAll(cleaned, 0755); err != nil {
+	// use MkdirAll which works on Windows and Unix and creates any necessary parents.
+	if err := os.MkdirAll(normalizedDirPath, 0755); err != nil {
 		return err
 	}
 
