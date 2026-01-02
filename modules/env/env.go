@@ -47,6 +47,7 @@ func Setup() {
 
 	// load library configuration AFTER the cache in order to avoid unnecessary crawling
 	loadLibraryConfigurations()
+	parseLibraryConfigurations()
 
 	// handle eveything required for build
 	prepareLibrariesforBuild()

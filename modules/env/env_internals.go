@@ -1,80 +1,13 @@
 package env
 
 import (
-	"encoding/json"
 	"fmt"
 	"gobi/modules/builder"
 	"gobi/modules/cache"
 	"gobi/modules/env/crawler"
-	"gobi/modules/filesystem"
 	"gobi/modules/library"
-	"log"
 	"path/filepath"
 )
-
-func loadBuildCache() error {
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
-
-	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(fileContent, &BuildCacheMap); err != nil {
-		log.Println("Error when unmarshalling JSON file", cacheFilePath)
-		return err
-	}
-
-	for key, value := range BuildCacheMap {
-		fmt.Println(key, value)
-	}
-
-	return nil
-}
-
-func loadSourceCache() error {
-	fmt.Println("------------ loading source cache ------------------")
-
-	return nil
-}
-
-func loadHeaderCache() error {
-	fmt.Println("------------ loading header cache ------------------")
-
-	return nil
-}
-
-func loadLibraryConfigurations() error {
-	fmt.Println("-------------- loading libraries -------------------")
-
-	for _, subdir := range ProjectConfiguration.Subdirectories {
-		libConfigFileName := filepath.Join(subdir, LibConfigFileName)
-
-		var localLibConfig library.LibraryProperties
-		fileContent, err := filesystem.ReadJsonConfigFile(libConfigFileName)
-		if err := json.Unmarshal(fileContent, &localLibConfig); err != nil {
-			log.Println("Error when unmarshalling JSON file", libConfigFileName)
-			return err
-		}
-
-		localLibConfig.Root, _ = filepath.Abs(subdir)
-		if err != nil {
-			return err
-		}
-
-		// @todo first check if binary exists. if so, only then do the source check - this is done in a dumb way
-		if len(localLibConfig.Sources) == 0 {
-			crawler.ScanDirectoryForFiles(localLibConfig.Root, &localLibConfig.Sources, ".c")
-		} else {
-			localLibConfig.ResolveSourcesGlobalPaths()
-		}
-
-		crawler.ScanDirectoryForFiles(localLibConfig.Root, &localLibConfig.Headers, ".h")
-		LibConfigurations[localLibConfig.Name] = localLibConfig
-	}
-
-	return nil
-}
 
 func scanEnvForSourceFiles() {
 	fmt.Println("-------------- scanning sources --------------------")
@@ -134,6 +67,38 @@ func scanEnvForHeaderFiles() {
 	}
 }
 
+func parseLibraryConfigurations() {
+	for _, lib := range LibConfigurations {
+		for _, source := range lib.Sources {
+			var timestamp int
+			crawler.GetTimestampForFile(source, &timestamp)
+
+			// update source cache
+			SourceCacheMap[filepath.Base(source)] = cache.SourceCache{
+				FileCache: cache.FileCache{
+					Timestamp: timestamp,
+					Path:      source,
+				},
+				Library: lib.Name,
+			}
+		}
+
+		for _, header := range lib.Headers {
+			var timestamp int
+			crawler.GetTimestampForFile(header, &timestamp)
+
+			// update header cache
+			HeaderCacheMap[filepath.Base(header)] = cache.HeaderCache{
+				FileCache: cache.FileCache{
+					Timestamp: timestamp,
+					Path:      header,
+				},
+				Library: lib.Name,
+			}
+		}
+	}
+}
+
 func prepareLibrariesforBuild() {
 	fmt.Println("-------------- baking libraries --------------------")
 
@@ -144,6 +109,9 @@ func prepareLibrariesforBuild() {
 		lib.ResolvePublicIncludesGlobalPaths()
 		lib.ResolvePrivateDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
 		lib.ResolvePublicDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
+
+		lib.InheritProjectDefines(ProjectConfiguration.LibraryProperties)
+		lib.InheritProjectFlags(ProjectConfiguration.LibraryProperties)
 
 		LibConfigurations[lib.Name] = lib // update the map
 

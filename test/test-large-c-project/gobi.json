@@ -7,6 +7,11 @@
     "sources": [
         "main.c"
     ],
+
+    "defines": [
+        "TEST_DEFINE=true",
+        "TEST_DEFINE_2"
+    ],
     
     "dependencies": {
         "private": [

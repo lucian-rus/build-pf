@@ -31,6 +31,11 @@ type LibraryProperties struct {
 	Headers       []string
 }
 
+func (lib *LibraryProperties) SetDefaultValues() {
+	(*lib).InheritDefines = true
+	(*lib).InheritFlags = true
+}
+
 func (lib *LibraryProperties) SpecifyNoMain() {
 	(*lib).Flags = append((*lib).Flags, "-c")
 }
@@ -82,4 +87,18 @@ func (lib *LibraryProperties) ResolvePublicDependencies(buildDir string, libConf
 			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
 		}
 	}
+}
+
+func (lib *LibraryProperties) InheritProjectFlags(projectConfig LibraryProperties) {
+	if !lib.InheritFlags {
+		return
+	}
+}
+
+func (lib *LibraryProperties) InheritProjectDefines(projectConfig LibraryProperties) {
+	if !lib.InheritDefines {
+		return
+	}
+
+	lib.Defines = append(lib.Defines, projectConfig.Defines...)
 }

@@ -7,10 +7,14 @@ type FileCache struct {
 }
 
 type SourceCache struct {
+	Library string
+
 	FileCache
 }
 
 type HeaderCache struct {
+	Library string
+
 	FileCache
 }
 
