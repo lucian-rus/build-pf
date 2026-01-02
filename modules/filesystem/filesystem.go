@@ -1,30 +1,23 @@
 package filesystem
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func CreateDirectory(dirPath string) error {
-	fmt.Println(dirPath)
-	dirsToCreate := strings.Split(dirPath, "/")
-	// @todo make this happen only on linux, as the "/" creates an empty entry at the beginning of the array
-	dirsToCreate = dirsToCreate[1:]
-	lastBuiltDir := "/" // this is extremely linux-specific @todo fix - works for now
+	// normalize path and create all parent directories in a cross-platform way.
+	normalizedDirPath := filepath.Clean(dirPath)
 
-	for _, dir := range dirsToCreate {
-		// this appends the last built directory in  to provide proper pathing
-		lastBuiltDir = filepath.Join(lastBuiltDir, dir)
-		if DoesEntityExist(lastBuiltDir) {
-			continue
-		}
+	// if it already exists, nothing to do.
+	if DoesEntityExist(normalizedDirPath) {
+		return nil
+	}
 
-		if err := os.Mkdir(lastBuiltDir, 0777); err != nil {
-			return err
-		}
+	// use MkdirAll which works on Windows and Unix and creates any necessary parents.
+	if err := os.MkdirAll(normalizedDirPath, 0777); err != nil {
+		return err
 	}
 
 	return nil
@@ -33,7 +26,7 @@ func CreateDirectory(dirPath string) error {
 func ReadJsonConfigFile(jsonFilePath string) ([]byte, error) {
 	data, err := os.ReadFile(jsonFilePath)
 	if err != nil {
-		log.Println("Error when trying to open JSON file", jsonFilePath)
+		log.Println("Error when trying to open JSON file", jsonFilePath, err)
 		return nil, err
 	}
 
