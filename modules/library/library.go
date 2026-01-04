@@ -26,7 +26,9 @@ type LibraryProperties struct {
 	}
 
 	// internals -> not meant to be configured via json
-	Root          string
+	Root       string
+	ObjectPath string
+
 	LinkedObjects []string
 	Headers       []string
 }
@@ -62,7 +64,8 @@ func (lib *LibraryProperties) ResolveSourcesGlobalPaths() {
 
 func (lib *LibraryProperties) ResolvePrivateDependencies(buildDir string, libConfigMap map[string]LibraryProperties) {
 	for _, dependency := range lib.Dependencies.Private {
-		libPath := filepath.Join(buildDir, libConfigMap[dependency].Name)
+		// @todo check if this is fine
+		libPath := filepath.Join(buildDir, "libs", libConfigMap[dependency].Name)
 
 		lib.Includes.Private = append(lib.Includes.Private, libConfigMap[dependency].Includes.Public...)
 		// extremely dumb way of doing this. @todo remove it
@@ -87,6 +90,10 @@ func (lib *LibraryProperties) ResolvePublicDependencies(buildDir string, libConf
 			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
 		}
 	}
+}
+
+func (lib *LibraryProperties) ResolveObjectPath(buildDir string) {
+	lib.ObjectPath = filepath.Join(buildDir, "libs", lib.Name)
 }
 
 func (lib *LibraryProperties) InheritProjectFlags(projectConfig LibraryProperties) {

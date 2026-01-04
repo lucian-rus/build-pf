@@ -77,7 +77,9 @@ func loadLibraryConfigurations() error {
 	return nil
 }
 
+// @todo refactor these functions to extract common code
 func loadBuildCache() error {
+	fmt.Println("------------- loading build cache ------------------")
 	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
@@ -99,12 +101,42 @@ func loadBuildCache() error {
 
 func loadSourceCache() error {
 	fmt.Println("------------ loading source cache ------------------")
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, SourceCacheFileName)
+
+	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(fileContent, &SourceCacheMap); err != nil {
+		log.Println("Error when unmarshalling JSON file", cacheFilePath)
+		return err
+	}
+
+	for key, value := range SourceCacheMap {
+		fmt.Println(key, value)
+	}
 
 	return nil
 }
 
 func loadHeaderCache() error {
 	fmt.Println("------------ loading header cache ------------------")
+	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, HeaderCacheFileName)
+
+	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(fileContent, &HeaderCacheMap); err != nil {
+		log.Println("Error when unmarshalling JSON file", cacheFilePath)
+		return err
+	}
+
+	for key, value := range HeaderCacheMap {
+		fmt.Println(key, value)
+	}
 
 	return nil
 }

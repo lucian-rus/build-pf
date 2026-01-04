@@ -33,11 +33,18 @@ var (
 	BuildCacheMap  = make(map[string]cache.BuildCache)
 	SourceCacheMap = make(map[string]cache.SourceCache)
 	HeaderCacheMap = make(map[string]cache.HeaderCache)
+
+	SourceFilesMap = make(map[string]cache.SourceCache)
+	HeaderFilesMap = make(map[string]cache.HeaderCache)
 )
 
 func Setup() {
 	loadProjectConfiguration()
+	loadLibraryConfigurations()
+
 	loadBuildCache()
+	loadSourceCache()
+	loadHeaderCache()
 
 	// @todo get a way to fix files that have the same name.
 	// some projects may have multiple files having the same name
@@ -45,13 +52,14 @@ func Setup() {
 	scanEnvForSourceFiles()
 	scanEnvForHeaderFiles()
 
-	// load library configuration AFTER the cache in order to avoid unnecessary crawling
-	loadLibraryConfigurations()
 	parseLibraryConfigurations()
 
 	// handle eveything required for build
 	prepareLibrariesforBuild()
 	prepareProjectForBuild()
+
+	runIncrementalBuildChecks()
+	runCommandCreator()
 
 	// after loading is done, start creating required directories
 	filesystem.CreateDirectory(ProjectConfiguration.OutputPath)
@@ -68,14 +76,14 @@ func CacheData() error {
 	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	data, err = json.MarshalIndent(SourceCacheMap, "", "  ")
+	data, err = json.MarshalIndent(SourceFilesMap, "", "  ")
 	if err != nil {
 		return err
 	}
 	cacheFilePath = filepath.Join(ProjectConfiguration.OutputPath, SourceCacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	data, err = json.MarshalIndent(HeaderCacheMap, "", "  ")
+	data, err = json.MarshalIndent(HeaderFilesMap, "", "  ")
 	if err != nil {
 		return err
 	}
