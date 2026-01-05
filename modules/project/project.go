@@ -20,6 +20,17 @@ type ProjectProperties struct {
 	BuildMetadataEnable      bool   `json:"build_meta_data_enable"`
 	PreprocessorOutputEnable bool   `json:"preprocessor_output_enable"`
 
+	// @todo enable user to support multiple kinds of header and source extensions
+	// e.g hpp, cc, hh etc
+
+	// @todo provide user with option to do variant handling
+	// common for platform-type projects
+
+	// @todo provide user with option to exclude specific directories ->
+	// maybe make this mutually exlusive with the subdirectories field
+	// this will enable the user to add example, vector etc directories in the repo that will not
+	// be scanned by the crawler
+
 	// a project is also a library
 	library.LibraryProperties
 }

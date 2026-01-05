@@ -3,63 +3,97 @@ package env
 
 import (
 	"encoding/json"
+	"fmt"
 	"gobi/modules/cache"
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
 	"gobi/modules/project"
-	"os"
+	"path/filepath"
 )
 
 const (
 	ProjectConfigFileName = "gobi.json"
 	LibConfigFileName     = "lib.json"
-	CacheConfigFileName   = "cache.json"
+
+	// cache files
+	BuildCacheFileName  = "cache/build-cache.json"
+	SourceCacheFileName = "cache/source-cache.json"
+	HeaderCacheFileName = "cache/header-cache.json"
 
 	// enable debugging/printing of data
 	EnableDebugData = true
 )
 
 var (
-	// public
-	ProjectConfiguration project.ProjectProperties
+	// internal
+	projectConfiguration project.ProjectProperties
+	libConfigurations    = make(map[string]library.LibraryProperties)
 
-	LibConfigurations = make(map[string]library.LibraryProperties)
-	BuildCacheMap     = make(map[string]cache.BuildCache)
+	buildCacheMap  = make(map[string]cache.BuildCache)
+	sourceCacheMap = make(map[string]cache.SourceCache)
+	headerCacheMap = make(map[string]cache.HeaderCache)
 
-// internal
+	sourceFilesMap = make(map[string]cache.SourceCache)
+	headerFilesMap = make(map[string]cache.HeaderCache)
+
+	skipBuildPhase = false
 )
 
 func Setup() {
-	loadProjectConfiguration()
-	loadBuildCache()
-
-	// load library configuration AFTER the cache in order to avoid unnecessary crawling
+	loadprojectConfiguration()
 	loadLibraryConfigurations()
+
+	loadBuildCache()
+	loadSourceCache()
+	loadHeaderCache()
+
+	// @todo get a way to fix files that have the same name.
+	// some projects may have multiple files having the same name
+	// this will cause key conflicts. check how to fix
+	scanEnvForSourceFiles()
+	scanEnvForHeaderFiles()
+
+	parseLibraryConfigurations()
 
 	// handle eveything required for build
 	prepareLibrariesforBuild()
 	prepareProjectForBuild()
 
+	runIncrementalBuildChecks()
+	if skipBuildPhase {
+		fmt.Println("Nothing to be done. Skipping...")
+	} else {
+		runCommandCreator()
+	}
+
 	// after loading is done, start creating required directories
-	filesystem.CreateDirectory(ProjectConfiguration.OutputPath)
+	filesystem.CreateDirectory(projectConfiguration.OutputPath)
+	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "cache"))
+	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "libs"))
 }
 
 // @todo check if this actually works as intended
-func CacheBuildData() {
-	data, err := json.MarshalIndent(BuildCacheMap, "", "  ")
+func CacheData() error {
+	data, err := json.MarshalIndent(buildCacheMap, "", "  ")
 	if err != nil {
-		// Optionally log or handle the error
-		return
+		return err
 	}
-	f, err := os.Create(CacheConfigFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
+
+	data, err = json.MarshalIndent(sourceFilesMap, "", "  ")
 	if err != nil {
-		// Optionally log or handle the error
-		return
+		return err
 	}
-	defer f.Close()
-	_, err = f.Write(data)
+	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
+
+	data, err = json.MarshalIndent(headerFilesMap, "", "  ")
 	if err != nil {
-		// Optionally log or handle the error
-		return
+		return err
 	}
+	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
+	filesystem.WriteDataToJson(data, cacheFilePath)
+
+	return nil
 }

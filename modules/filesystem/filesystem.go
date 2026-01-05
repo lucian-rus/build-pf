@@ -33,6 +33,19 @@ func ReadJsonConfigFile(jsonFilePath string) ([]byte, error) {
 	return data, nil
 }
 
+func WriteDataToJson(data []byte, jsonFilePath string) error {
+	file, err := os.Create(jsonFilePath)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	if _, err := file.Write(data); err != nil {
+		return err
+	}
+	return nil
+}
+
 // entity is defined as either dir/file
 func DoesEntityExist(path string) bool {
 	if _, err := os.Stat(path); err != nil {

@@ -1,5 +1,6 @@
 {
     "name": "lib_app",
+    "inherit_defines": false,
 
     "includes": {
         "public": [
