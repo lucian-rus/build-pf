@@ -3,6 +3,7 @@ package env
 
 import (
 	"encoding/json"
+	"fmt"
 	"gobi/modules/cache"
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
@@ -24,22 +25,22 @@ const (
 )
 
 var (
-	// public
-	ProjectConfiguration project.ProjectProperties
-
-	LibConfigurations = make(map[string]library.LibraryProperties)
-
 	// internal
-	BuildCacheMap  = make(map[string]cache.BuildCache)
-	SourceCacheMap = make(map[string]cache.SourceCache)
-	HeaderCacheMap = make(map[string]cache.HeaderCache)
+	projectConfiguration project.ProjectProperties
+	libConfigurations    = make(map[string]library.LibraryProperties)
 
-	SourceFilesMap = make(map[string]cache.SourceCache)
-	HeaderFilesMap = make(map[string]cache.HeaderCache)
+	buildCacheMap  = make(map[string]cache.BuildCache)
+	sourceCacheMap = make(map[string]cache.SourceCache)
+	headerCacheMap = make(map[string]cache.HeaderCache)
+
+	sourceFilesMap = make(map[string]cache.SourceCache)
+	headerFilesMap = make(map[string]cache.HeaderCache)
+
+	skipBuildPhase = false
 )
 
 func Setup() {
-	loadProjectConfiguration()
+	loadprojectConfiguration()
 	loadLibraryConfigurations()
 
 	loadBuildCache()
@@ -59,35 +60,39 @@ func Setup() {
 	prepareProjectForBuild()
 
 	runIncrementalBuildChecks()
-	runCommandCreator()
+	if skipBuildPhase {
+		fmt.Println("Nothing to be done. Skipping...")
+	} else {
+		runCommandCreator()
+	}
 
 	// after loading is done, start creating required directories
-	filesystem.CreateDirectory(ProjectConfiguration.OutputPath)
-	filesystem.CreateDirectory(filepath.Join(ProjectConfiguration.OutputPath, "cache"))
-	filesystem.CreateDirectory(filepath.Join(ProjectConfiguration.OutputPath, "libs"))
+	filesystem.CreateDirectory(projectConfiguration.OutputPath)
+	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "cache"))
+	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "libs"))
 }
 
 // @todo check if this actually works as intended
 func CacheData() error {
-	data, err := json.MarshalIndent(BuildCacheMap, "", "  ")
+	data, err := json.MarshalIndent(buildCacheMap, "", "  ")
 	if err != nil {
 		return err
 	}
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	data, err = json.MarshalIndent(SourceFilesMap, "", "  ")
+	data, err = json.MarshalIndent(sourceFilesMap, "", "  ")
 	if err != nil {
 		return err
 	}
-	cacheFilePath = filepath.Join(ProjectConfiguration.OutputPath, SourceCacheFileName)
+	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
 
-	data, err = json.MarshalIndent(HeaderFilesMap, "", "  ")
+	data, err = json.MarshalIndent(headerFilesMap, "", "  ")
 	if err != nil {
 		return err
 	}
-	cacheFilePath = filepath.Join(ProjectConfiguration.OutputPath, HeaderCacheFileName)
+	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
 
 	return nil

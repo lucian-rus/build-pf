@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func loadProjectConfiguration() error {
+func loadprojectConfiguration() error {
 	fmt.Println("--------------- loading project --------------------")
 	projectDir, _ := os.Getwd()
 	projConfigFileName := filepath.Join(projectDir, ProjectConfigFileName)
@@ -22,22 +22,22 @@ func loadProjectConfiguration() error {
 		return err
 	}
 
-	if err := json.Unmarshal(fileContent, &ProjectConfiguration); err != nil {
+	if err := json.Unmarshal(fileContent, &projectConfiguration); err != nil {
 		log.Println("Error when unmarshalling JSON file", projConfigFileName)
 		return err
 	}
 
 	// @todo update the formatter
 	if EnableDebugData {
-		fmt.Println("name of project:		", ProjectConfiguration.Name)
-		fmt.Println("list of private includes:	", ProjectConfiguration.Includes.Private)
-		fmt.Println("list of public includes:	", ProjectConfiguration.Includes.Public)
-		fmt.Println("list of private dependencies:	", ProjectConfiguration.Dependencies.Private)
-		fmt.Println("list of public dependencies:	", ProjectConfiguration.Dependencies.Public)
+		fmt.Println("name of project:		", projectConfiguration.Name)
+		fmt.Println("list of private includes:	", projectConfiguration.Includes.Private)
+		fmt.Println("list of public includes:	", projectConfiguration.Includes.Public)
+		fmt.Println("list of private dependencies:	", projectConfiguration.Dependencies.Private)
+		fmt.Println("list of public dependencies:	", projectConfiguration.Dependencies.Public)
 	}
 
-	ProjectConfiguration.ResolveSubdirPaths(projectDir)
-	ProjectConfiguration.ResolveOutputPath(projectDir)
+	projectConfiguration.ResolveSubdirPaths(projectDir)
+	projectConfiguration.ResolveOutputPath(projectDir)
 
 	return nil
 }
@@ -45,7 +45,7 @@ func loadProjectConfiguration() error {
 func loadLibraryConfigurations() error {
 	fmt.Println("-------------- loading libraries -------------------")
 
-	for _, subdir := range ProjectConfiguration.Subdirectories {
+	for _, subdir := range projectConfiguration.Subdirectories {
 		libConfigFileName := filepath.Join(subdir, LibConfigFileName)
 
 		// declare and init default values
@@ -71,7 +71,7 @@ func loadLibraryConfigurations() error {
 		}
 
 		crawler.ScanDirectoryForFiles(localLibConfig.Root, &localLibConfig.Headers, ".h")
-		LibConfigurations[localLibConfig.Name] = localLibConfig
+		libConfigurations[localLibConfig.Name] = localLibConfig
 	}
 
 	return nil
@@ -80,19 +80,19 @@ func loadLibraryConfigurations() error {
 // @todo refactor these functions to extract common code
 func loadBuildCache() error {
 	fmt.Println("------------- loading build cache ------------------")
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, BuildCacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fileContent, &BuildCacheMap); err != nil {
+	if err := json.Unmarshal(fileContent, &buildCacheMap); err != nil {
 		log.Println("Error when unmarshalling JSON file", cacheFilePath)
 		return err
 	}
 
-	for key, value := range BuildCacheMap {
+	for key, value := range buildCacheMap {
 		fmt.Println(key, value)
 	}
 
@@ -101,19 +101,19 @@ func loadBuildCache() error {
 
 func loadSourceCache() error {
 	fmt.Println("------------ loading source cache ------------------")
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, SourceCacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fileContent, &SourceCacheMap); err != nil {
+	if err := json.Unmarshal(fileContent, &sourceCacheMap); err != nil {
 		log.Println("Error when unmarshalling JSON file", cacheFilePath)
 		return err
 	}
 
-	for key, value := range SourceCacheMap {
+	for key, value := range sourceCacheMap {
 		fmt.Println(key, value)
 	}
 
@@ -122,19 +122,19 @@ func loadSourceCache() error {
 
 func loadHeaderCache() error {
 	fmt.Println("------------ loading header cache ------------------")
-	cacheFilePath := filepath.Join(ProjectConfiguration.OutputPath, HeaderCacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fileContent, &HeaderCacheMap); err != nil {
+	if err := json.Unmarshal(fileContent, &headerCacheMap); err != nil {
 		log.Println("Error when unmarshalling JSON file", cacheFilePath)
 		return err
 	}
 
-	for key, value := range HeaderCacheMap {
+	for key, value := range headerCacheMap {
 		fmt.Println(key, value)
 	}
 

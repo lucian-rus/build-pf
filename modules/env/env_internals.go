@@ -20,7 +20,7 @@ func scanEnvForSourceFiles() {
 		var lastEditTimestamp int
 		crawler.GetTimestampForFile(source, &lastEditTimestamp)
 
-		SourceFilesMap[filepath.Base(source)] = cache.SourceCache{
+		sourceFilesMap[filepath.Base(source)] = cache.SourceCache{
 			FileCache: cache.FileCache{
 				Path:      source,
 				Timestamp: lastEditTimestamp,
@@ -34,7 +34,7 @@ func scanEnvForSourceFiles() {
 	}
 
 	fmt.Println("Source map:")
-	for key, value := range SourceFilesMap {
+	for key, value := range sourceFilesMap {
 		fmt.Println(key, value)
 	}
 }
@@ -49,7 +49,7 @@ func scanEnvForHeaderFiles() {
 		var lastEditTimestamp int
 		crawler.GetTimestampForFile(header, &lastEditTimestamp)
 
-		HeaderFilesMap[filepath.Base(header)] = cache.HeaderCache{
+		headerFilesMap[filepath.Base(header)] = cache.HeaderCache{
 			FileCache: cache.FileCache{
 				Path:      header,
 				Timestamp: lastEditTimestamp,
@@ -63,15 +63,15 @@ func scanEnvForHeaderFiles() {
 	}
 
 	fmt.Println("Header map:")
-	for key, value := range HeaderFilesMap {
+	for key, value := range headerFilesMap {
 		fmt.Println(key, value)
 	}
 }
 
 func parseLibraryConfigurations() {
 	// @todo check if this can be optimized
-	for _, lib := range LibConfigurations {
-		updateSourceFilesMap(lib)
+	for _, lib := range libConfigurations {
+		updatesourceFilesMap(lib)
 		updateHeadersFilesMap(lib)
 	}
 }
@@ -79,45 +79,43 @@ func parseLibraryConfigurations() {
 func prepareLibrariesforBuild() {
 	fmt.Println("-------------- baking libraries --------------------")
 
-	if len(LibConfigurations) == 0 {
-		fmt.Println("Nothing to do. Skip...")
-	}
-
-	for _, lib := range LibConfigurations {
+	for _, lib := range libConfigurations {
+		fmt.Println(" - Baking", lib.Name)
 		// since libraries do not contain the main function, use `-c` flag
 		lib.SpecifyNoMain()
 		lib.ResolvePrivateIncludesGlobalPaths()
 		lib.ResolvePublicIncludesGlobalPaths()
-		lib.ResolvePrivateDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
-		lib.ResolvePublicDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
-		lib.ResolveObjectPath(ProjectConfiguration.OutputPath)
+		lib.ResolvePrivateDependencies(projectConfiguration.OutputPath, libConfigurations)
+		lib.ResolvePublicDependencies(projectConfiguration.OutputPath, libConfigurations)
+		lib.ResolveObjectPath(projectConfiguration.OutputPath)
 
-		lib.InheritProjectDefines(ProjectConfiguration.LibraryProperties)
-		lib.InheritProjectFlags(ProjectConfiguration.LibraryProperties)
+		lib.InheritProjectDefines(projectConfiguration.LibraryProperties)
+		lib.InheritProjectFlags(projectConfiguration.LibraryProperties)
 
-		LibConfigurations[lib.Name] = lib // update the map
+		libConfigurations[lib.Name] = lib // update the map
 	}
 }
 
 func prepareProjectForBuild() {
 	fmt.Println("--------------- baking project ---------------------")
+	fmt.Println(" - Baking", projectConfiguration.Name)
 
-	ProjectConfiguration.ResolvePrivateIncludesGlobalPaths()
-	ProjectConfiguration.ResolvePublicIncludesGlobalPaths()
-	ProjectConfiguration.ResolvePrivateDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
-	ProjectConfiguration.ResolvePublicDependencies(ProjectConfiguration.OutputPath, LibConfigurations)
+	projectConfiguration.ResolvePrivateIncludesGlobalPaths()
+	projectConfiguration.ResolvePublicIncludesGlobalPaths()
+	projectConfiguration.ResolvePrivateDependencies(projectConfiguration.OutputPath, libConfigurations)
+	projectConfiguration.ResolvePublicDependencies(projectConfiguration.OutputPath, libConfigurations)
 	// unlike libraries, do this here, as libraries are sent to `libs` dir
 	// @todo check if there is a better way to do it
-	ProjectConfiguration.ObjectPath = filepath.Join(ProjectConfiguration.OutputPath, ProjectConfiguration.Name)
+	projectConfiguration.ObjectPath = filepath.Join(projectConfiguration.OutputPath, projectConfiguration.Name)
 }
 
 // @todo account for the project checks as well
 func runIncrementalBuildChecks() {
 	var libsToBeSkipped []string
 
-	for key, lib := range LibConfigurations {
+	for key, lib := range libConfigurations {
 		var libPreviouslyBuilt bool
-		if _, ok := BuildCacheMap[lib.Name]; ok {
+		if _, ok := buildCacheMap[lib.Name]; ok {
 			libPreviouslyBuilt = true
 		}
 
@@ -126,32 +124,44 @@ func runIncrementalBuildChecks() {
 			libsToBeSkipped = append(libsToBeSkipped, key)
 		}
 	}
-
+	// run the delete sequence
 	for _, lib := range libsToBeSkipped {
-		delete(LibConfigurations, lib)
+		delete(libConfigurations, lib)
 	}
+
+	// do the same for the project configuration
+	var libPreviouslyBuilt bool
+	if _, ok := buildCacheMap[projectConfiguration.Name]; ok {
+		libPreviouslyBuilt = true
+	}
+
+	cachedTimestampMatch := doFileTimestampsMatch(projectConfiguration.LibraryProperties)
+	if libPreviouslyBuilt && cachedTimestampMatch && (len(libConfigurations) == 0) {
+		skipBuildPhase = true
+	}
+
 }
 
 func runCommandCreator() {
-	for _, lib := range LibConfigurations {
+	for _, lib := range libConfigurations {
 		commandList := createCommandSequence(lib)
 		builder.AddBuildSequence(commandList)
 	}
 
-	for _, lib := range LibConfigurations {
+	for _, lib := range libConfigurations {
 		printLibraryDebugData(lib)
 	}
 
-	commandList := createCommandSequence(ProjectConfiguration.LibraryProperties)
+	commandList := createCommandSequence(projectConfiguration.LibraryProperties)
 	builder.AddBuildSequence(commandList)
 
-	printLibraryDebugData(ProjectConfiguration.LibraryProperties)
+	printLibraryDebugData(projectConfiguration.LibraryProperties)
 }
 
 func createCommandSequence(lib library.LibraryProperties) []string {
 	var commandList []string
 	// append compiler
-	commandList = append(commandList, ProjectConfiguration.Compiler)
+	commandList = append(commandList, projectConfiguration.Compiler)
 	commandList = append(commandList, lib.Flags...)
 
 	// append definitions
@@ -179,7 +189,7 @@ func createCommandSequence(lib library.LibraryProperties) []string {
 	commandList = append(commandList, lib.Sources...)
 	commandList = append(commandList, lib.LinkedObjects...)
 
-	BuildCacheMap[lib.Name] = cache.BuildCache{
+	buildCacheMap[lib.Name] = cache.BuildCache{
 		FileCache: cache.FileCache{
 			Timestamp: int(time.Now().Unix()),
 			Path:      lib.ObjectPath,
@@ -195,7 +205,7 @@ func updateHeadersFilesMap(lib library.LibraryProperties) {
 		crawler.GetTimestampForFile(header, &timestamp)
 
 		// update header cache
-		HeaderFilesMap[filepath.Base(header)] = cache.HeaderCache{
+		headerFilesMap[filepath.Base(header)] = cache.HeaderCache{
 			FileCache: cache.FileCache{
 				Timestamp: timestamp,
 				Path:      header,
@@ -205,13 +215,13 @@ func updateHeadersFilesMap(lib library.LibraryProperties) {
 	}
 }
 
-func updateSourceFilesMap(lib library.LibraryProperties) {
+func updatesourceFilesMap(lib library.LibraryProperties) {
 	for _, source := range lib.Sources {
 		var timestamp int
 		crawler.GetTimestampForFile(source, &timestamp)
 
 		// update source cache
-		SourceFilesMap[filepath.Base(source)] = cache.SourceCache{
+		sourceFilesMap[filepath.Base(source)] = cache.SourceCache{
 			FileCache: cache.FileCache{
 				Timestamp: timestamp,
 				Path:      source,
@@ -227,12 +237,12 @@ func doFileTimestampsMatch(lib library.LibraryProperties) bool {
 		var cachedTimestamp int
 
 		sourceBaseName := filepath.Base(source)
-		if _, ok := SourceFilesMap[sourceBaseName]; ok {
-			liveTimestamp = SourceFilesMap[sourceBaseName].Timestamp
+		if _, ok := sourceFilesMap[sourceBaseName]; ok {
+			liveTimestamp = sourceFilesMap[sourceBaseName].Timestamp
 		}
 
-		if _, ok := SourceCacheMap[sourceBaseName]; ok {
-			cachedTimestamp = SourceCacheMap[sourceBaseName].Timestamp
+		if _, ok := sourceCacheMap[sourceBaseName]; ok {
+			cachedTimestamp = sourceCacheMap[sourceBaseName].Timestamp
 		}
 
 		if liveTimestamp != cachedTimestamp {
