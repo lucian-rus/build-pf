@@ -60,6 +60,7 @@ func Setup() {
 	prepareProjectForBuild()
 
 	runIncrementalBuildChecks()
+	// @todo this is not done ideally and should be modified. once the dependency system is up and running, replace this.
 	if skipBuildPhase {
 		fmt.Println("Nothing to be done. Skipping...")
 	} else {
