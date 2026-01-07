@@ -77,64 +77,21 @@ func loadLibraryConfigurations() error {
 	return nil
 }
 
-// @todo refactor these functions to extract common code
-func loadBuildCache() error {
-	fmt.Println("------------- loading build cache ------------------")
-	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
+func loadCache[T any](cacheFileName string, cacheMap map[string]T) error {
+	fmt.Printf("------------- loading %s cache ------------------\n", cacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, cacheFileName)
 
 	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fileContent, &buildCacheMap); err != nil {
+	if err := json.Unmarshal(fileContent, &cacheMap); err != nil {
 		log.Println("Error when unmarshalling JSON file", cacheFilePath)
 		return err
 	}
 
-	for key, value := range buildCacheMap {
-		fmt.Println(key, value)
-	}
-
-	return nil
-}
-
-func loadSourceCache() error {
-	fmt.Println("------------ loading source cache ------------------")
-	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
-
-	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(fileContent, &sourceCacheMap); err != nil {
-		log.Println("Error when unmarshalling JSON file", cacheFilePath)
-		return err
-	}
-
-	for key, value := range sourceCacheMap {
-		fmt.Println(key, value)
-	}
-
-	return nil
-}
-
-func loadHeaderCache() error {
-	fmt.Println("------------ loading header cache ------------------")
-	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
-
-	fileContent, err := filesystem.ReadJsonConfigFile(cacheFilePath)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(fileContent, &headerCacheMap); err != nil {
-		log.Println("Error when unmarshalling JSON file", cacheFilePath)
-		return err
-	}
-
-	for key, value := range headerCacheMap {
+	for key, value := range cacheMap {
 		fmt.Println(key, value)
 	}
 
