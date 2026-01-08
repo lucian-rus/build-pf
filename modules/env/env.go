@@ -43,9 +43,9 @@ func Setup() {
 	loadprojectConfiguration()
 	loadLibraryConfigurations()
 
-	loadBuildCache()
-	loadSourceCache()
-	loadHeaderCache()
+	loadCache(BuildCacheFileName, buildCacheMap)
+	loadCache(SourceCacheFileName, sourceCacheMap)
+	loadCache(HeaderCacheFileName, headerCacheMap)
 
 	// @todo get a way to fix files that have the same name.
 	// some projects may have multiple files having the same name
@@ -75,26 +75,20 @@ func Setup() {
 
 // @todo check if this actually works as intended
 func CacheData() error {
-	data, err := json.MarshalIndent(buildCacheMap, "", "  ")
+	cacheDataFiles(buildCacheMap, BuildCacheFileName)
+	cacheDataFiles(sourceCacheMap, SourceCacheFileName)
+	cacheDataFiles(headerCacheMap, HeaderCacheFileName)
+
+	return nil
+}
+
+func cacheDataFiles[T any](cacheMap map[string]T, cacheFileName string) error {
+	data, err := json.MarshalIndent(cacheMap, "", "  ")
 	if err != nil {
 		return err
 	}
-	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
+	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, cacheFileName)
 	filesystem.WriteDataToJson(data, cacheFilePath)
-
-	data, err = json.MarshalIndent(sourceFilesMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
-	filesystem.WriteDataToJson(data, cacheFilePath)
-
-	data, err = json.MarshalIndent(headerFilesMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
-	filesystem.WriteDataToJson(data, cacheFilePath)
-
+	
 	return nil
 }

@@ -233,19 +233,19 @@ func updatesourceFilesMap(lib library.LibraryProperties) {
 
 func doFileTimestampsMatch(lib library.LibraryProperties) bool {
 	for _, source := range lib.Sources {
-		var liveTimestamp int
+		var actualTimestamp int
 		var cachedTimestamp int
 
 		sourceBaseName := filepath.Base(source)
 		if _, ok := sourceFilesMap[sourceBaseName]; ok {
-			liveTimestamp = sourceFilesMap[sourceBaseName].Timestamp
+			actualTimestamp = sourceFilesMap[sourceBaseName].Timestamp
 		}
 
 		if _, ok := sourceCacheMap[sourceBaseName]; ok {
 			cachedTimestamp = sourceCacheMap[sourceBaseName].Timestamp
 		}
 
-		if liveTimestamp != cachedTimestamp {
+		if actualTimestamp != cachedTimestamp {
 			return false
 		}
 	}
