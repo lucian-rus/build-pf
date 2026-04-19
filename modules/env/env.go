@@ -2,12 +2,13 @@
 package env
 
 import (
-	"encoding/json"
 	"fmt"
 	"gobi/modules/cache"
+	"gobi/modules/env/crawler"
 	"gobi/modules/filesystem"
 	"gobi/modules/library"
 	"gobi/modules/project"
+	"os"
 	"path/filepath"
 )
 
@@ -40,61 +41,37 @@ var (
 )
 
 func Setup() {
-	loadprojectConfiguration()
-	loadLibraryConfigurations()
+	loadProjectConfiguration()
 
-	loadBuildCache()
-	loadSourceCache()
-	loadHeaderCache()
+	// scanEnvForSourceFiles()
+	// scanEnvForHeaderFiles()
 
-	// @todo get a way to fix files that have the same name.
-	// some projects may have multiple files having the same name
-	// this will cause key conflicts. check how to fix
-	scanEnvForSourceFiles()
-	scanEnvForHeaderFiles()
-
-	parseLibraryConfigurations()
-
-	// handle eveything required for build
-	prepareLibrariesforBuild()
-	prepareProjectForBuild()
-
-	runIncrementalBuildChecks()
-	// @todo this is not done ideally and should be modified. once the dependency system is up and running, replace this.
-	if skipBuildPhase {
-		fmt.Println("Nothing to be done. Skipping...")
-	} else {
-		runCommandCreator()
+	if err := crawler.ScanDirectoryForFiles(".", &projectConfiguration.Sources, ".c"); err != nil {
+		fmt.Println("could not read sources")
 	}
 
-	// after loading is done, start creating required directories
+	var headerFiles []string
+	if err := crawler.ScanDirectoryForFiles(".", &headerFiles, ".h"); err != nil {
+		fmt.Println("could not read headers")
+	}
+
+	headerDirs := make(map[string]bool)
+	projectConfiguration.Includes.Private = nil
+	for _, header := range headerFiles {
+		dir := filepath.Dir(header)
+		if !headerDirs[dir] {
+			headerDirs[dir] = true
+			projectConfiguration.Includes.Private = append(projectConfiguration.Includes.Private, dir)
+		}
+	}
+
+	prepareProjectForBuild()
+	runCommandCreator()
+
 	filesystem.CreateDirectory(projectConfiguration.OutputPath)
-	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "cache"))
-	filesystem.CreateDirectory(filepath.Join(projectConfiguration.OutputPath, "libs"))
 }
 
-// @todo check if this actually works as intended
-func CacheData() error {
-	data, err := json.MarshalIndent(buildCacheMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	cacheFilePath := filepath.Join(projectConfiguration.OutputPath, BuildCacheFileName)
-	filesystem.WriteDataToJson(data, cacheFilePath)
-
-	data, err = json.MarshalIndent(sourceFilesMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, SourceCacheFileName)
-	filesystem.WriteDataToJson(data, cacheFilePath)
-
-	data, err = json.MarshalIndent(headerFilesMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	cacheFilePath = filepath.Join(projectConfiguration.OutputPath, HeaderCacheFileName)
-	filesystem.WriteDataToJson(data, cacheFilePath)
-
-	return nil
+func Cleanup() {
+	os.RemoveAll(projectConfiguration.OutputPath)
+	// os.RemoveAll(projectConfiguration.LogPath)
 }

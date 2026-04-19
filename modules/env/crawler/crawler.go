@@ -1,7 +1,7 @@
 package crawler
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -14,17 +14,14 @@ func ScanDirectoryForFiles(dirPath string, fileList *[]string, fileType string) 
 		}
 
 		sourceFilePath, err := filepath.Abs(path)
-		fmt.Println("Scanning directory for files -", dirPath)
-		fmt.Println("	* found file: ", sourceFilePath)
+		log.Println("Scanning directory for files - ", filepath.Dir(sourceFilePath))
+		log.Println("	* found file: ", sourceFilePath)
 
 		(*fileList) = append(*fileList, sourceFilePath)
 		return err
 	})
 
 	return err
-}
-
-func ScanDirectoryForConfigurationFiles() {
 }
 
 func GetTimestampForFile(filePath string, timestamp *int) error {
@@ -35,16 +32,4 @@ func GetTimestampForFile(filePath string, timestamp *int) error {
 	(*timestamp) = int(info.ModTime().Unix())
 
 	return nil
-}
-
-func ScanBuildDirectoryForLibraries(dirPath string) error {
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, _ error) error {
-
-		// if filepath.Ext(info.Name()) == "" && !info.IsDir() {
-		// 	builder.LibsBuilt = append(builder.LibsBuilt, info.Name())
-		// }
-		return nil
-	})
-
-	return err
 }

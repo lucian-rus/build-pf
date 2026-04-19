@@ -3,7 +3,6 @@ package main
 import (
 	"gobi/cmd"
 	"gobi/modules/env"
-	"gobi/modules/logger"
 )
 
 // @todo work on archi, as data shall be kept and trasnferred as optimally as possible
@@ -18,11 +17,11 @@ func main() {
 	// load project config
 	env.Setup()
 
-	file := logger.Setup(".")
-	defer file.Close()
+	// file := logger.Setup(".")
+	// defer file.Close()
 
 	cmd.Execute()
 
 	// @todo check how pacgo does this
-	env.CacheData()
+	// env.CacheData()
 }

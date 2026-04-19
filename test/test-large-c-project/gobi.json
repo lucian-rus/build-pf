@@ -4,26 +4,9 @@
     "log_path": "log",
 
     "name": "main-app",
-    "sources": [
-        "main.c"
-    ],
 
     "defines": [
         "TEST_DEFINE=true",
         "TEST_DEFINE_2"
-    ],
-    
-    "dependencies": {
-        "private": [
-            "lib_algo",
-            "lib_app",
-            "lib_io"
-        ]
-    },
-
-    "subdirectories": [
-        "./algorithms",
-        "./app",
-        "./io"
     ]
 }
