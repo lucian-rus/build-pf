@@ -16,11 +16,11 @@ func prepareProjectForBuild() {
 
 	projectConfiguration.ResolvePrivateIncludesGlobalPaths()
 	projectConfiguration.ResolvePublicIncludesGlobalPaths()
-	projectConfiguration.ResolvePrivateDependencies(projectConfiguration.OutputPath, libConfigurations)
-	projectConfiguration.ResolvePublicDependencies(projectConfiguration.OutputPath, libConfigurations)
+	projectConfiguration.ResolvePrivateDependencies(projectConfiguration.OutputDirPath, libConfigurations)
+	projectConfiguration.ResolvePublicDependencies(projectConfiguration.OutputDirPath, libConfigurations)
 	// unlike libraries, do this here, as libraries are sent to `libs` dir
 	// @todo check if there is a better way to do it
-	projectConfiguration.ObjectPath = filepath.Join(projectConfiguration.OutputPath, projectConfiguration.Name)
+	projectConfiguration.OutputPath = filepath.Join(projectConfiguration.OutputDirPath, projectConfiguration.Name)
 }
 
 // @todo account for the project checks as well
@@ -44,10 +44,15 @@ func createCommandSequence(lib library.LibraryProperties) []string {
 	var commandList []string
 	// append compiler
 	commandList = append(commandList, projectConfiguration.Compiler)
-	commandList = append(commandList, lib.Flags...)
+	commandList = append(commandList, lib.Flags.Public...)
+	commandList = append(commandList, lib.Flags.Private...)
 
 	// append definitions
-	for _, item := range lib.Defines {
+	for _, item := range lib.Defines.Public {
+		parsedArgument := "-D" + item
+		commandList = append(commandList, parsedArgument)
+	}
+	for _, item := range lib.Defines.Private {
 		parsedArgument := "-D" + item
 		commandList = append(commandList, parsedArgument)
 	}
@@ -65,36 +70,19 @@ func createCommandSequence(lib library.LibraryProperties) []string {
 
 	// append output
 	commandList = append(commandList, "-o")
-	commandList = append(commandList, lib.ObjectPath)
+	commandList = append(commandList, lib.OutputPath)
 
 	// append sources and dependencies
 	commandList = append(commandList, lib.Sources...)
-	commandList = append(commandList, lib.LinkedObjects...)
 
 	buildCacheMap[lib.Name] = cache.BuildCache{
 		FileCache: cache.FileCache{
 			Timestamp: int(time.Now().Unix()),
-			Path:      lib.ObjectPath,
+			Path:      lib.OutputPath,
 		},
 	}
 
 	return commandList
-}
-
-func updateHeadersFilesMap(lib library.LibraryProperties) {
-	for _, header := range lib.Headers {
-		var timestamp int
-		crawler.GetTimestampForFile(header, &timestamp)
-
-		// update header cache
-		headerFilesMap[filepath.Base(header)] = cache.HeaderCache{
-			FileCache: cache.FileCache{
-				Timestamp: timestamp,
-				Path:      header,
-			},
-			Library: lib.Name,
-		}
-	}
 }
 
 func updatesourceFilesMap(lib library.LibraryProperties) {

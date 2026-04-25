@@ -2,35 +2,39 @@ package library
 
 import (
 	"path/filepath"
-	"slices"
 )
+
+type LibraryType uint8
+
+const (
+	TypeProject LibraryType = iota
+	TypeInterface
+	TypeLibrary
+)
+
+type ScopedProperties struct {
+	Public  []string `json:"public,omitempty"`
+	Private []string `json:"private,omitempty"`
+}
 
 type LibraryProperties struct {
 	Name    string   `json:"name"`
-	Defines []string `json:"defines"`
 	Sources []string `json:"sources"`
-	Flags   []string `json:"flags"`
 
 	// project inheritance
 	InheritFlags   bool `json:"inherit_flags"`
 	InheritDefines bool `json:"inherit_defines"`
 
-	Includes struct {
-		Public  []string `json:"public"`  // these includes can be accessed by libs that depend on this lib
-		Private []string `json:"private"` // these includes are not visible
-	}
-
-	Dependencies struct {
-		Public  []string `json:"public"`  // allows dependencies to be inherited by other libs
-		Private []string `json:"private"` // dependencies will NOT be inherited
-	}
+	Includes     ScopedProperties `json:"includes"`
+	Defines      ScopedProperties `json:"defines"`
+	Flags        ScopedProperties `json:"flags"`
+	LinkerFlags  ScopedProperties `json:"linker_flags"`
+	Dependencies ScopedProperties `json:"dependencies"`
 
 	// internals -> not meant to be configured via json
+	Type       LibraryType
 	Root       string
-	ObjectPath string
-
-	LinkedObjects []string
-	Headers       []string
+	OutputPath string
 }
 
 func (lib *LibraryProperties) SetDefaultValues() {
@@ -39,7 +43,7 @@ func (lib *LibraryProperties) SetDefaultValues() {
 }
 
 func (lib *LibraryProperties) SpecifyNoMain() {
-	(*lib).Flags = append((*lib).Flags, "-c")
+	(*lib).Flags.Private = append((*lib).Flags.Private, "-c")
 }
 
 func (lib *LibraryProperties) ResolvePrivateIncludesGlobalPaths() {
@@ -65,13 +69,7 @@ func (lib *LibraryProperties) ResolveSourcesGlobalPaths() {
 func (lib *LibraryProperties) ResolvePrivateDependencies(buildDir string, libConfigMap map[string]LibraryProperties) {
 	for _, dependency := range lib.Dependencies.Private {
 		// @todo check if this is fine
-		libPath := filepath.Join(buildDir, "libs", libConfigMap[dependency].Name)
-
 		lib.Includes.Private = append(lib.Includes.Private, libConfigMap[dependency].Includes.Public...)
-		// extremely dumb way of doing this. @todo remove it
-		if !slices.Contains(lib.Flags, "-c") {
-			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
-		}
 	}
 }
 
@@ -81,19 +79,12 @@ func (lib *LibraryProperties) ResolvePrivateDependencies(buildDir string, libCon
 
 func (lib *LibraryProperties) ResolvePublicDependencies(buildDir string, libConfigMap map[string]LibraryProperties) {
 	for _, dependency := range lib.Dependencies.Public {
-		libPath := filepath.Join(buildDir, libConfigMap[dependency].Name)
-
 		lib.Includes.Public = append(lib.Includes.Public, libConfigMap[dependency].Includes.Public...)
-
-		// extremely dumb way of doing this. @todo remove it
-		if !slices.Contains(lib.Flags, "-c") {
-			lib.LinkedObjects = append(lib.LinkedObjects, libPath)
-		}
 	}
 }
 
-func (lib *LibraryProperties) ResolveObjectPath(buildDir string) {
-	lib.ObjectPath = filepath.Join(buildDir, "libs", lib.Name)
+func (lib *LibraryProperties) ResolveOutputPath(buildDir string) {
+	lib.OutputPath = filepath.Join(buildDir, "libs", lib.Name)
 }
 
 func (lib *LibraryProperties) InheritProjectFlags(projectConfig LibraryProperties) {
@@ -107,5 +98,6 @@ func (lib *LibraryProperties) InheritProjectDefines(projectConfig LibraryPropert
 		return
 	}
 
-	lib.Defines = append(lib.Defines, projectConfig.Defines...)
+	lib.Defines.Public = append(lib.Defines.Public, projectConfig.Defines.Public...)
+	lib.Defines.Private = append(lib.Defines.Private, projectConfig.Defines.Private...)
 }

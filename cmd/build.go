@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"gobi/modules/builder"
+	"gobi/modules/env"
 	"log"
 	"time"
 
@@ -14,6 +15,7 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		runBuildCmd(args)
 	},
+	// @todo maybe split build into libs build, proj build or specific lib build
 }
 
 func init() {
@@ -28,6 +30,7 @@ func runBuildCmd(args []string) {
 
 	startNow := time.Now()
 
+	env.Setup()
 	builder.Build()
 
 	// step 6 -> check benchmark

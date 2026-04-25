@@ -16,9 +16,9 @@ type ProjectProperties struct {
 	Linker    string `json:"linker"`
 	Assembler string `json:"assembler"`
 
-	OutputPath               string `json:"output_path"`
-	BuildMetadataEnable      bool   `json:"build_meta_data_enable"`
-	PreprocessorOutputEnable bool   `json:"preprocessor_output_enable"`
+	OutputDirPath string `json:"output_dir"`
+	// BuildMetadataEnable      bool   `json:"build_meta_data_enable"`
+	// PreprocessorOutputEnable bool   `json:"preprocessor_output_enable"`
 
 	// @todo enable user to support multiple kinds of header and source extensions
 	// e.g hpp, cc, hh etc
@@ -42,5 +42,5 @@ func (proj *ProjectProperties) ResolveSubdirPaths(projectPath string) {
 }
 
 func (proj *ProjectProperties) ResolveOutputPath(projectPath string) {
-	proj.OutputPath = filepath.Join(projectPath, proj.OutputPath)
+	proj.OutputDirPath = filepath.Join(projectPath, proj.OutputDirPath)
 }

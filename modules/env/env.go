@@ -68,10 +68,10 @@ func Setup() {
 	prepareProjectForBuild()
 	runCommandCreator()
 
-	filesystem.CreateDirectory(projectConfiguration.OutputPath)
+	filesystem.CreateDirectory(projectConfiguration.OutputDirPath)
 }
 
 func Cleanup() {
-	os.RemoveAll(projectConfiguration.OutputPath)
+	os.RemoveAll(projectConfiguration.OutputDirPath)
 	// os.RemoveAll(projectConfiguration.LogPath)
 }
